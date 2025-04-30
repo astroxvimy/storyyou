@@ -66,7 +66,7 @@ export function PricingCard({
                 ? '$' + yearPrice / 100
                 : monthPrice
                 ? '$' + monthPrice / 100
-                : 'Custom'}
+                : 'One time'}
             </span>
             <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span>
           </div>
