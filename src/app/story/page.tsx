@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
+import { useToast } from '@/components/ui/use-toast';
 
 const steps = [
   { id: 'upload', title: 'Upload Photo' },
@@ -21,7 +22,6 @@ const steps = [
 ];
 
 export default function StoryPage() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     photo: null as File | null,
@@ -31,9 +31,17 @@ export default function StoryPage() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewStory, setPreviewStory] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      if (currentStep === 1 && formData.hobbies.length < 5 ) {
+        toast({
+          variant: 'destructive',
+          description: 'You should select at least 5 hobbies',
+        });
+        return;
+      }
       setCurrentStep(currentStep + 1);
     }
   };
@@ -93,6 +101,7 @@ export default function StoryPage() {
                 placeholder="My Adventure Story"
                 value={formData.storyName}
                 onChange={(e) => setFormData({ ...formData, storyName: e.target.value })}
+                className='text-white'
               />
             </div>
             <div className="space-y-2">
@@ -101,6 +110,7 @@ export default function StoryPage() {
                 placeholder="Any specific details you'd like to include in the story..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className='text-white'
               />
             </div>
           </div>
@@ -128,9 +138,9 @@ export default function StoryPage() {
 
   return (
     <div className="container max-w-3xl py-8">
-      <Card>
+      <Card className='bg-gray-700'>
         <CardHeader>
-          <CardTitle>Create Your Story</CardTitle>
+          <CardTitle className='text-2xl font-bold'>Create Your Story</CardTitle>
           <CardDescription>
             Follow these steps to create a personalized story for your child.
           </CardDescription>
@@ -152,7 +162,6 @@ export default function StoryPage() {
             {/* Navigation Buttons */}
             <div className="flex justify-between pt-4">
               <Button
-                variant="outline"
                 onClick={handleBack}
                 disabled={currentStep === 0}
               >

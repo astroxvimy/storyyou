@@ -46,7 +46,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
             alt="Preview"
             className="mx-auto h-32 w-32 object-cover rounded-lg"
           />
-          <Button variant="outline" size="sm">
+          <Button size="sm">
             <UploadIcon className="mr-2 h-4 w-4" />
             Change Image
           </Button>
@@ -61,7 +61,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
               "Drag and drop an image, or click to select"
             )}
           </p>
-          <Button variant="outline" size="sm">
+          <Button size="sm">
             <UploadIcon className="mr-2 h-4 w-4" />
             Upload Image
           </Button>

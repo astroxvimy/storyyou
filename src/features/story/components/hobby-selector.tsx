@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Cross1Icon } from '@radix-ui/react-icons';
+import { useToast } from '@/components/ui/use-toast';
 
 const commonHobbies = [
   'Soccer', 'Basketball', 'Drawing', 'Painting', 'Dancing',
@@ -19,8 +20,16 @@ interface HobbySelectorProps {
 
 export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps) {
   const [customHobby, setCustomHobby] = useState('');
+  const { toast } = useToast();
 
   const addHobby = (hobby: string) => {
+    if (selectedHobbies.length > 12) {
+      toast({
+        variant: 'default',
+        description: 'You can only select up to 12 hobbies',
+      });
+      return;
+    }
     if (!selectedHobbies.includes(hobby)) {
       onChange([...selectedHobbies, hobby]);
     }
@@ -60,7 +69,6 @@ export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps)
         {commonHobbies.map(hobby => (
           <Button
             key={hobby}
-            variant="outline"
             size="sm"
             onClick={() => addHobby(hobby)}
             disabled={selectedHobbies.includes(hobby)}
@@ -77,7 +85,7 @@ export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps)
           value={customHobby}
           onChange={(e) => setCustomHobby(e.target.value)}
           placeholder="Add a custom hobby..."
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-white"
         />
         <Button type="submit" size="sm">
           Add
