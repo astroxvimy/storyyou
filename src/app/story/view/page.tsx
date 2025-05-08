@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from 'react';
 
-interface Story {
-  id: string;
-  title: string;
-  status: 'pending' | 'text_processing' | 'text_complete' | 'image_processing' | 'image_complete' | 'complete';
-}
+import { getStories } from '@/features/story/controllers/get-stories';
+import type { Database } from '@/libs/supabase/types';
+
+// interface Story {
+//   id: string;
+//   title: string;
+//   status: 'pending' | 'text_processing' | 'text_complete' | 'image_processing' | 'image_complete' | 'complete';
+// }
+
+type Story = Database['public']['Tables']['stories']['Insert'];
 
 interface StoryPage {
   id: string;
@@ -28,9 +33,8 @@ export default function StoryViewPage() {
   // Load stories on mount
   useEffect(() => {
     const fetchStories = async () => {
-      const res = await fetch('/api/stories');
-      const data = await res.json();
-      setStories(data);
+      const storiesData = await getStories();
+      setStories(storiesData);
     };
     fetchStories();
   }, []);

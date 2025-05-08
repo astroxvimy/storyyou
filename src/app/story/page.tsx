@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
-import { useToast } from '@/components/ui/use-toast';
 
 const steps = [
   { id: 'upload', title: 'Upload Photo' },
@@ -70,7 +69,7 @@ export default function StoryPage() {
       case 'upload':
         return (
           <div className="space-y-4">
-            <Label>Upload Child's Photo</Label>
+            <Label>Upload Child&apos;s Photo</Label>
             <ImageUpload
               onImageUpload={(file) => setFormData({ ...formData, photo: file })}
             />
@@ -125,7 +124,7 @@ export default function StoryPage() {
             {!previewStory && (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  Click "Generate Story" to create your personalized story.
+                  Click &quot;Generate Story&quot; to create your personalized story.
                 </p>
               </div>
             )}

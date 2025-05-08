@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { createStory } from "@/features/story/controllers/create-story";
 import { generateStoryText } from "@/features/story/controllers/generate-story-text";
 
