@@ -13,6 +13,8 @@ import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
 
+import { storyService, accountService } from '@/libs/api_service';
+
 const steps = [
   { id: 'upload', title: 'Upload Photo' },
   { id: 'hobbies', title: 'Select Hobbies' },
@@ -34,7 +36,7 @@ export default function StoryPage() {
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      if (currentStep === 1 && formData.hobbies.length < 5 ) {
+      if (currentStep === 1 && formData.hobbies.length < 5) {
         toast({
           variant: 'destructive',
           description: 'You should select at least 5 hobbies',
@@ -56,7 +58,14 @@ export default function StoryPage() {
     try {
       // TODO: Implement story generation
       // For now, just show a preview
-      setPreviewStory("Once upon a time, there was a child who loved to play soccer and draw pictures...");
+      setPreviewStory('Once upon a time, there was a child who loved to play soccer and draw pictures...');
+      const userId = await accountService.getUserId();
+      storyService.submit({
+        userId,
+        storyName: formData.storyName,
+        hobbies: formData.hobbies,
+        userPicture: formData.photo as File,
+      });
     } catch (error) {
       console.error('Error generating story:', error);
     } finally {
@@ -68,42 +77,38 @@ export default function StoryPage() {
     switch (steps[currentStep].id) {
       case 'upload':
         return (
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <Label>Upload Child&apos;s Photo</Label>
-            <ImageUpload
-              onImageUpload={(file) => setFormData({ ...formData, photo: file })}
-            />
-            <p className="text-sm text-muted-foreground">
+            <ImageUpload onImageUpload={(file) => setFormData({ ...formData, photo: file })} />
+            <p className='text-sm text-muted-foreground'>
               Upload a photo to personalize the story. The AI will use this to create illustrations.
             </p>
           </div>
         );
       case 'hobbies':
         return (
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <Label>Select Hobbies</Label>
             <HobbySelector
               selectedHobbies={formData.hobbies}
               onChange={(hobbies) => setFormData({ ...formData, hobbies })}
             />
-            <p className="text-sm text-muted-foreground">
-              Choose hobbies that will be featured in the story.
-            </p>
+            <p className='text-sm text-muted-foreground'>Choose hobbies that will be featured in the story.</p>
           </div>
         );
       case 'details':
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className='space-y-4'>
+            <div className='space-y-2'>
               <Label>Story Name (Optional)</Label>
               <Input
-                placeholder="My Adventure Story"
+                placeholder='My Adventure Story'
                 value={formData.storyName}
                 onChange={(e) => setFormData({ ...formData, storyName: e.target.value })}
                 className='text-white'
               />
             </div>
-            <div className="space-y-2">
+            <div className='space-y-2'>
               <Label>Additional Details</Label>
               <Textarea
                 placeholder="Any specific details you'd like to include in the story..."
@@ -116,14 +121,11 @@ export default function StoryPage() {
         );
       case 'preview':
         return (
-          <div className="space-y-4">
-            <StoryPreview
-              story={previewStory}
-              isGenerating={isGenerating}
-            />
+          <div className='space-y-4'>
+            <StoryPreview story={previewStory} isGenerating={isGenerating} />
             {!previewStory && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
+              <div className='py-8 text-center'>
+                <p className='text-muted-foreground'>
                   Click &quot;Generate Story&quot; to create your personalized story.
                 </p>
               </div>
@@ -136,20 +138,20 @@ export default function StoryPage() {
   };
 
   return (
-    <div className="container max-w-3xl py-8">
+    <div className='container max-w-3xl py-8'>
       <Card className='bg-gray-700'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold'>Create Your Story</CardTitle>
-          <CardDescription>
-            Follow these steps to create a personalized story for your child.
-          </CardDescription>
+          <CardDescription>Follow these steps to create a personalized story for your child.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-8">
+          <div className='space-y-8'>
             {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Step {currentStep + 1} of {steps.length}</span>
+            <div className='space-y-2'>
+              <div className='flex justify-between text-sm'>
+                <span>
+                  Step {currentStep + 1} of {steps.length}
+                </span>
                 <span>{steps[currentStep].title}</span>
               </div>
               <Progress value={(currentStep + 1) * (100 / steps.length)} />
@@ -159,24 +161,16 @@ export default function StoryPage() {
             {renderStep()}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4">
-              <Button
-                onClick={handleBack}
-                disabled={currentStep === 0}
-              >
+            <div className='flex justify-between pt-4'>
+              <Button onClick={handleBack} disabled={currentStep === 0}>
                 Back
               </Button>
               {currentStep === steps.length - 1 ? (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isGenerating}
-                >
+                <Button onClick={handleSubmit} disabled={isGenerating}>
                   {isGenerating ? 'Generating...' : 'Generate Story'}
                 </Button>
               ) : (
-                <Button onClick={handleNext}>
-                  Next
-                </Button>
+                <Button onClick={handleNext}>Next</Button>
               )}
             </div>
           </div>
@@ -184,4 +178,4 @@ export default function StoryPage() {
       </Card>
     </div>
   );
-} 
+}
