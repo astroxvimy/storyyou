@@ -12,8 +12,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
-
-import { storyService, accountService } from '@/libs/api_service';
+import { storyService } from '@/libs/api_service';
 
 const steps = [
   { id: 'upload', title: 'Upload Photo' },
@@ -59,13 +58,14 @@ export default function StoryPage() {
       // TODO: Implement story generation
       // For now, just show a preview
       setPreviewStory('Once upon a time, there was a child who loved to play soccer and draw pictures...');
-      const userId = await accountService.getUserId();
+      console.log('🚗Generating story with data:', formData);
       storyService.submit({
-        userId,
         storyName: formData.storyName,
         hobbies: formData.hobbies,
         userPicture: formData.photo as File,
+        storyDetail: formData.description,
       });
+      console.log('🚗Story submitted successfully');
     } catch (error) {
       console.error('Error generating story:', error);
     } finally {

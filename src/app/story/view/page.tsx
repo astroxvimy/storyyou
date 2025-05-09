@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
 import { useEffect, useState } from 'react';
 
-import { getStories } from '@/features/story/controllers/get-stories';
+import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
 
 // interface Story {
@@ -29,12 +29,14 @@ export default function StoryViewPage() {
   const [currentStoryId, setCurrentStoryId] = useState<string | null>(null);
   const [currentStory, setCurrentStory] = useState<StoryWithPages | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+  const [isImagePolling, setIsImagePolling] = useState(false);
 
   // Load stories on mount
   useEffect(() => {
     const fetchStories = async () => {
-      const storiesData = await getStories();
-      setStories(storiesData);
+      const storiesData = await storyService.getStories();
+      console.log('🚗Fetched stories:', storiesData.data);
+      setStories(storiesData.data.stories);
     };
     fetchStories();
   }, []);
@@ -44,14 +46,21 @@ export default function StoryViewPage() {
     if (!currentStoryId) return;
 
     const fetchStory = async () => {
-      const res = await fetch(`/api/story/${currentStoryId}`);
-      const data = await res.json();
-      setCurrentStory(data);
-
-      if (data.status !== 'text_complete' && data.status !== 'complete') {
+      // const res = await fetch(`/api/story/${currentStoryId}`);
+      const res = await storyService.getStoryStatus(currentStoryId);
+      const data = res.data;
+      // setCurrentStory(data);
+      console.log('🚗Fetched story:', data);
+      if (data.status !== 'text_complete' && data.status !== 'image_complete' && data.status !== 'book_complete') {
+        console.log('🚗Story is not ready yet:', data.status);
         setIsPolling(true);
       } else {
         setIsPolling(false);
+        console.log('🚗Generating images for story:', currentStoryId);
+        storyService.generateImages(currentStoryId);
+        console.log('🚗Image generation started');
+        setIsImagePolling(true);
+        console.log('🚗Image generation polling started');
       }
     };
 
@@ -67,6 +76,31 @@ export default function StoryViewPage() {
     };
   }, [currentStoryId, isPolling]);
 
+  // Poll for image status
+  useEffect(() => {
+    if (!currentStoryId || !isImagePolling) return;
+
+    const fetchStoryWithImages = async () => {
+      const res = await storyService.getStoryStatus(currentStoryId);
+      const story = res.data;
+      // setCurrentStory(story);
+
+      if (story.status === 'image_complete') {
+        setIsImagePolling(false);
+        console.log('🚗Image generation complete');
+        const res = await storyService.getStory(currentStoryId);
+        setCurrentStory(res.data.story);
+        console.log('🚗generating book for: ', currentStoryId);
+        storyService.generateBook(currentStoryId);
+        return;
+      }
+    };
+
+    const interval = setInterval(fetchStoryWithImages, 3000);
+
+    return () => clearInterval(interval);
+  }, [currentStoryId, isImagePolling]);
+
   // Handle selecting the current story (top button)
   const handleSelectCurrent = async () => {
     const res = await fetch('/api/story/current');
@@ -75,39 +109,36 @@ export default function StoryViewPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Stories</h1>
+    <div className='mx-auto max-w-4xl p-4'>
+      <h1 className='mb-4 text-2xl font-bold'>Your Stories</h1>
 
-      <button
-        onClick={handleSelectCurrent}
-        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-      >
+      <button onClick={handleSelectCurrent} className='mb-4 rounded bg-blue-500 px-4 py-2 text-white'>
         View Current Story
       </button>
 
-      <div className="flex gap-4 mb-6">
+      <div className='mb-6 flex gap-4'>
         {stories.map((story) => (
           <button
             key={story.id}
-            onClick={() => setCurrentStoryId(story.id)}
-            className={`border px-3 py-1 rounded ${story.id === currentStoryId ? 'bg-blue-100' : ''}`}
+            onClick={() => setCurrentStoryId(story?.id || null)}
+            className={`rounded border px-3 py-1 ${story.id === currentStoryId ? 'bg-blue-100' : ''}`}
           >
-            {story.title}
+            {story?.story_name || 'Untitled Story'}
           </button>
         ))}
       </div>
 
       {currentStory && (
         <div>
-          <h2 className="text-xl font-semibold mb-2">{currentStory.title}</h2>
-          <p className="italic text-sm text-gray-600 mb-4">Status: {currentStory.status}</p>
+          <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
+          <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
 
           {currentStory.story_pages.map((page) => (
-            <div key={page.id} className="mb-6">
-              <h3 className="font-semibold">Page {page.page_number}</h3>
-              <p>{page.text}</p>
+            <div key={page.id} className='mb-6'>
+              <h3 className='font-semibold'>Page {page.page_number}</h3>
+              <p>{page.page_text}</p>
               {page.page_image && (
-                <img src={page.page_image} alt={`Page ${page.page_number}`} className="mt-2 w-full max-w-md" />
+                <img src={page.page_image} alt={`Page ${page.page_number}`} className='mt-2 w-full max-w-md' />
               )}
             </div>
           ))}
