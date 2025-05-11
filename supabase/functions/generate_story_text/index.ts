@@ -107,11 +107,33 @@ Deno.serve(async (req) => {
   }
 });
 
-function splitTextIntoChunks(text: string): string[] {
-  const chunkSize = 1000;
-  const chunks = [];
-  for (let i = 0; i < text.length; i += chunkSize) {
-    chunks.push(text.slice(i, i + chunkSize));
+function splitTextIntoChunks(text: string, targetWordsPerChunk = 250): string[] {
+  const sentences =
+    text
+      .match(/[^.!?]+[.!?]+[\])'"`’”]*|\s*$/g)
+      ?.map((s) => s.trim())
+      .filter(Boolean) || [];
+  const chunks: string[] = [];
+
+  let currentChunk = '';
+  let currentWordCount = 0;
+
+  for (const sentence of sentences) {
+    const sentenceWordCount = sentence.split(/\s+/).length;
+
+    if (currentWordCount + sentenceWordCount > targetWordsPerChunk && currentChunk) {
+      chunks.push(currentChunk.trim());
+      currentChunk = sentence + ' ';
+      currentWordCount = sentenceWordCount;
+    } else {
+      currentChunk += sentence + ' ';
+      currentWordCount += sentenceWordCount;
+    }
   }
+
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+
   return chunks;
 }
