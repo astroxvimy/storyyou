@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
+import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text } from '@react-pdf/renderer';
 
 // interface Story {
 //   id: string;
@@ -16,13 +17,44 @@ type Story = Database['public']['Tables']['stories']['Insert'];
 interface StoryPage {
   id: string;
   page_number: number;
-  text: string;
+  page_text: string;
   page_image?: string;
 }
 
 interface StoryWithPages extends Story {
   story_pages: StoryPage[];
 }
+
+const styles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontSize: 16,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  },
+  text: {
+    marginBottom: 10,
+  },
+  image: {
+    width: 400,
+    height: 300,
+    marginTop: 10,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+});
+
+const StoryPDF = ({ story }: { story: StoryWithPages }) => (
+  <Document>
+    {story.story_pages.map((page, index) => (
+      <Page key={index} style={styles.page}>
+        <Text style={styles.text}>Page {page.page_number}</Text>
+        <Text style={styles.text}>{page.page_text}</Text>
+        {page.page_image && <Image src={page.page_image} style={styles.image} />}
+      </Page>
+    ))}
+  </Document>
+);
 
 export default function StoryViewPage() {
   const [stories, setStories] = useState<Story[]>([]);
@@ -91,7 +123,8 @@ export default function StoryViewPage() {
         const res = await storyService.getStory(currentStoryId);
         setCurrentStory(res.data.story);
         console.log('🚗generating book for: ', currentStoryId);
-        storyService.generateBook(currentStoryId);
+
+        // storyService.generateBook(currentStoryId);
         return;
       }
     };
@@ -132,8 +165,13 @@ export default function StoryViewPage() {
         <div>
           <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
           <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
-
-          {currentStory.story_pages.map((page) => (
+          {/* PDF Preview */}
+          <div className='mb-6'>
+            <PDFViewer width='100%' height='1200'>
+              <StoryPDF story={currentStory} />
+            </PDFViewer>
+          </div>
+          {/* {currentStory.story_pages.map((page) => (
             <div key={page.id} className='mb-6'>
               <h3 className='font-semibold'>Page {page.page_number}</h3>
               <p>{page.page_text}</p>
@@ -141,7 +179,7 @@ export default function StoryViewPage() {
                 <img src={page.page_image} alt={`Page ${page.page_number}`} className='mt-2 w-full max-w-md' />
               )}
             </div>
-          ))}
+          ))} */}
         </div>
       )}
     </div>

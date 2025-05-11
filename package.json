@@ -18,6 +18,7 @@
     "migration:squash": "supabase migration squash --linked"
   },
   "dependencies": {
+    "@pdfme/common": "^5.3.16",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.4",
@@ -28,6 +29,7 @@
     "@radix-ui/react-tabs": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.4",
     "@react-email/components": "^0.0.32",
+    "@react-pdf/renderer": "^4.3.0",
     "@stripe/stripe-js": "^2.4.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.12",
