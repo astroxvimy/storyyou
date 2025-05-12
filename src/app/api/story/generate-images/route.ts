@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       console.log('🚕Page image:', storyPage.page_image);
       generateStoryPageImage({
         pageId: storyPage.id,
-        text: storyPage.page_text ?? '',
+        image_prompt: storyPage.image_prompt ?? '',
       });
     }
 

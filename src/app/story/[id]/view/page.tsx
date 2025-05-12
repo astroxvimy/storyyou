@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
@@ -57,8 +58,11 @@ const StoryPDF = ({ story }: { story: StoryWithPages }) => (
 );
 
 export default function StoryViewPage() {
+  const params = useParams();
+  const routeId = typeof params?.id === 'string' ? params.id : null;
   const [stories, setStories] = useState<Story[]>([]);
-  const [currentStoryId, setCurrentStoryId] = useState<string | null>(null);
+  const [currentStoryId, setCurrentStoryId] = useState<string | null>(routeId);
+  console.log('🚗😀😀😀Current story ID:', currentStoryId);
   const [currentStory, setCurrentStory] = useState<StoryWithPages | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [isImagePolling, setIsImagePolling] = useState(false);
@@ -73,35 +77,33 @@ export default function StoryViewPage() {
     fetchStories();
   }, []);
 
-  // Load and poll current story
+  // poll for text status
   useEffect(() => {
     if (!currentStoryId) return;
 
+    let interval: NodeJS.Timeout | null = null;
+    console.log('🚗Current story ID:', currentStoryId);
     const fetchStory = async () => {
       // const res = await fetch(`/api/story/${currentStoryId}`);
       const res = await storyService.getStoryStatus(currentStoryId);
       const data = res.data;
       // setCurrentStory(data);
       console.log('🚗Fetched story:', data);
-      if (data.status !== 'text_complete' && data.status !== 'image_complete' && data.status !== 'book_complete') {
-        console.log('🚗Story is not ready yet:', data.status);
-        setIsPolling(true);
-      } else {
+      if (data.status === 'text_complete') {
+        console.log('🚗Text generation complete, starting image generation...');
+        clearInterval(interval!);
         setIsPolling(false);
-        console.log('🚗Generating images for story:', currentStoryId);
         storyService.generateImages(currentStoryId);
         console.log('🚗Image generation started');
         setIsImagePolling(true);
-        console.log('🚗Image generation polling started');
+      } else {
+        console.log('🚗Text not complete yet:', data.status);
       }
     };
 
-    fetchStory();
-
-    let interval: NodeJS.Timeout | null = null;
-    if (isPolling) {
-      interval = setInterval(fetchStory, 3000);
-    }
+    interval = setInterval(fetchStory, 3000);
+    setIsPolling(true);
+    fetchStory(); // initial fetch immediately
 
     return () => {
       if (interval) clearInterval(interval);

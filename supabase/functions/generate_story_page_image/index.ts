@@ -3,9 +3,9 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
 const SUPABASE_URL = Deno.env.get('NEXT_PUBLIC_SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY');
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   const supabaseAdminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const { pageId, text } = await req.json();
+    const { pageId, image_prompt } = await req.json();
 
     const { data: pageData, error: pageError } = await supabaseAdminClient
       .from('story_pages')
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       .update({ story_status: 'image_processing' })
       .eq('id', pageData.story_id);
     if (updateStoryError) throw updateStoryError;
-
+    console.log('😀😀😀', image_prompt);
     // Call DALL·E API (or OpenAI image generation endpoint)
     const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
       },
       body: JSON.stringify({
-        prompt: text,
+        prompt: image_prompt,
         size: '1024x1024',
         n: 1,
       }),

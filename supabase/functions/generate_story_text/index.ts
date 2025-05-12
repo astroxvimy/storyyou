@@ -77,9 +77,40 @@ Deno.serve(async (req) => {
 
     // Insert pages into story_pages table
     for (let i = 0; i < chunks.length; i++) {
-      const { error } = await supabaseAdminClient
-        .from('story_pages')
-        .insert([{ story_id: storyId, page_number: i + 1, page_text: chunks[i] }]);
+      const pageText = chunks[i];
+
+      const promptGenRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'user',
+              content: `Create a concise, vivid visual description (max 100 words) suitable for DALL·E image generation of this children's story page: "${pageText}"`,
+            },
+            {
+              role: 'user',
+              content: `Create a visual description prompt suitable for a DALL·E image generation of this children's story page: "${pageText}"`,
+            },
+          ],
+        }),
+      });
+
+      const promptJson = await promptGenRes.json();
+      const imagePrompt = promptJson.choices?.[0]?.message?.content?.trim() ?? '';
+
+      const { error } = await supabaseAdminClient.from('story_pages').insert([
+        {
+          story_id: storyId,
+          page_number: i + 1,
+          page_text: chunks[i],
+          image_prompt: imagePrompt,
+        },
+      ]);
       if (error) {
         console.log('🛵🛵Error inserting page:', error);
         throw error;

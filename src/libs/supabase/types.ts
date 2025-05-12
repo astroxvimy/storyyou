@@ -152,6 +152,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          image_prompt: string | null
           page_image: string | null
           page_number: number | null
           page_text: string | null
@@ -161,6 +162,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          image_prompt?: string | null
           page_image?: string | null
           page_number?: number | null
           page_text?: string | null
@@ -170,6 +172,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          image_prompt?: string | null
           page_image?: string | null
           page_number?: number | null
           page_text?: string | null

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,7 @@ export default function StoryPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewStory, setPreviewStory] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -52,6 +54,8 @@ export default function StoryPage() {
     }
   };
 
+  let storyId: string = '';
+
   const handleSubmit = async () => {
     setIsGenerating(true);
     try {
@@ -59,17 +63,20 @@ export default function StoryPage() {
       // For now, just show a preview
       setPreviewStory('Once upon a time, there was a child who loved to play soccer and draw pictures...');
       console.log('🚗Generating story with data:', formData);
-      storyService.submit({
+      const res = await storyService.submit({
         storyName: formData.storyName,
         hobbies: formData.hobbies,
         userPicture: formData.photo as File,
         storyDetail: formData.description,
       });
+      console.log('😀😀😀', res);
+      storyId = res.data.data.id;
       console.log('🚗Story submitted successfully');
     } catch (error) {
       console.error('Error generating story:', error);
     } finally {
       setIsGenerating(false);
+      router.push(`/story/${storyId}/view`);
     }
   };
 
