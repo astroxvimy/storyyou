@@ -8,13 +8,10 @@ import { getSubscription } from '@/features/account/controllers/get-subscription
 import { PricingCard } from '@/features/pricing/components/price-card';
 import { getProducts } from '@/features/pricing/controllers/get-products';
 import { Price, ProductWithPrices } from '@/features/pricing/types';
+import Image from 'next/image';
 
 export default async function AccountPage() {
   const [session, subscription, products] = await Promise.all([getSession(), getSubscription(), getProducts()]);
-
-  if (!session) {
-    redirect('/login');
-  }
 
   let userProduct: ProductWithPrices | undefined;
   let userPrice: Price | undefined;
@@ -32,10 +29,15 @@ export default async function AccountPage() {
 
   return (
     <section className='rounded-lg bg-black px-4 py-16'>
-      <h1 className='mb-8 text-center'>Account</h1>
+      <h1 className='mb-4 text-center'>Account</h1>
 
       <div className='flex flex-col gap-4'>
-        <Card
+        <section className='mt-2 flex w-full flex-col items-center gap-8 rounded-lg bg-black p-10 px-4 text-center'>
+          <Image src='/profile-placeholder.png' width={100} height={100} alt='Profile Picture' className='rounded-full' />
+          <h1 className='text-2xl'>Welcome!</h1>
+          <p className='text-neutral-400'>Email: {session?.user?.email}</p>
+        </section>
+        {/* <Card
           title='Your Plan'
           footer={
             subscription ? (
@@ -54,7 +56,7 @@ export default async function AccountPage() {
           ) : (
             <p>You don&apos;t have an active subscription</p>
           )}
-        </Card>
+        </Card> */}
       </div>
     </section>
   );

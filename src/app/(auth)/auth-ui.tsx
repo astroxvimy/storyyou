@@ -23,7 +23,7 @@ export function AuthUI({
 }: {
   mode: 'login' | 'signup';
   signInWithOAuth: (provider: 'github' | 'google') => Promise<ActionResponse>;
-  signInWithEmail: (email: string) => Promise<ActionResponse>;
+  signInWithEmail: (email: string, password: string) => Promise<ActionResponse>;
 }) {
   const [pending, setPending] = useState(false);
   const [emailFormOpen, setEmailFormOpen] = useState(false);
@@ -33,14 +33,32 @@ export function AuthUI({
     setPending(true);
     const form = event.target as HTMLFormElement;
     const email = form['email'].value;
-    const response = await signInWithEmail(email);
+    const password = form['password'].value;
+    const passwordConfirm = mode === 'signup' ? form['passwordConfirm'].value : '';
+
+    if(mode === 'signup' && password !== passwordConfirm) {
+      toast({
+        variant: 'destructive',
+        description: 'Passwords do not match. Please try again.',
+      });
+      setPending(false);
+      return;
+    }
+
+    const response = await signInWithEmail(email, password);
 
     if (response?.error) {
       toast({
         variant: 'destructive',
         description: 'An error occurred while authenticating. Please try again.',
       });
-    } else {
+    } if (response?.data) {
+      toast({
+        variant: 'default',
+        description: 'Successfully logined!'
+      })
+    }
+     else {
       toast({
         description: `To continue, click the link in the email sent to: ${email}`,
       });
@@ -106,6 +124,25 @@ export function AuthUI({
                   aria-label='Enter your email'
                   autoFocus
                 />
+                <Input
+                  type='password'
+                  name='password'
+                  placeholder='Enter your password'
+                  aria-label='Enter your password'
+                  autoFocus
+                  className='mt-2'
+                />
+                {
+                  mode === 'signup' &&
+                  (<Input
+                    type='password'
+                    name='passwordConfirm'
+                    placeholder='Confirm your password'
+                    aria-label='Confirm your password'
+                    className='mt-2'
+                    autoFocus
+                  />)
+                }
                 <div className='mt-4 flex justify-end gap-2'>
                   <Button type='button' onClick={() => setEmailFormOpen(false)}>
                     Cancel

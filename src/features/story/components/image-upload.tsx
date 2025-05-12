@@ -7,10 +7,12 @@ import { ImageIcon, UploadIcon } from '@radix-ui/react-icons';
 
 interface ImageUploadProps {
   onImageUpload: (file: File) => void;
+  previewProps?: string | null;
+  setPreviewImage?: (previewImage: string | null) => void;
 }
 
-export function ImageUpload({ onImageUpload }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(null);
+export function ImageUpload({ onImageUpload, previewProps, setPreviewImage }: ImageUploadProps) {
+  const [preview, setPreview] = useState<string | null>(previewProps ?? null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -19,6 +21,7 @@ export function ImageUpload({ onImageUpload }: ImageUploadProps) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
+        setPreviewImage && setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }

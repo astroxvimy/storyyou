@@ -24,23 +24,58 @@ export async function signInWithOAuth(provider: 'github' | 'google'): Promise<Ac
   return redirect(data.url);
 }
 
-export async function signInWithEmail(email: string): Promise<ActionResponse> {
+export async function signInWithEmail(email: string, password: string): Promise<ActionResponse> {
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: getURL('/auth/callback'),
-    },
-  });
+  // const { error } = await supabase.auth.signInWithOtp({
+  //   email,
+  //   options: {
+  //     emailRedirectTo: getURL('/auth/callback'),
+  //   },
+  // });
 
+  const { data, error } = await supabase.auth.signInWithPassword({ 
+    email, 
+    password 
+  });
+  
   if (error) {
     console.error(error);
     return { data: null, error: error };
   }
 
-  return { data: null, error: null };
+  if (!data?.user) return { data: null, error: "Login failed - no user returned" };
+  if (!data?.session) return { data: null, error: "Login failed - no session returned" };
+
+  return { data: data, error: null };
 }
+
+export const signUpWithEmail = async (email: string, password: string): Promise<ActionResponse> => {
+
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase.auth.signUp({ 
+    email, 
+    password,
+    options: {
+      emailRedirectTo: getURL('/auth/callback'),
+    }
+  });
+
+  if (error) {
+    return {data: null, error: error};
+  }
+
+  if (!data?.user) return { data: null, error: "User was not created" };
+
+  // Check if email confirmation is required
+  if (data.session === null) {
+    // Email confirmation is required
+    return { data: null, error: null };
+  }
+
+  return {data: null, error: null};
+};
 
 export async function signOut(): Promise<ActionResponse> {
   const supabase = await createSupabaseServerClient();

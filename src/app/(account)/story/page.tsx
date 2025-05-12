@@ -32,6 +32,7 @@ export default function StoryPage() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewStory, setPreviewStory] = useState<string | null>(null);
+  const [userPhotoPreview, setUserPhotoPreview] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -61,8 +62,8 @@ export default function StoryPage() {
     try {
       // TODO: Implement story generation
       // For now, just show a preview
-      setPreviewStory('Once upon a time, there was a child who loved to play soccer and draw pictures...');
-      console.log('🚗Generating story with data:', formData);
+      // setPreviewStory('Once upon a time, there was a child who loved to play soccer and draw pictures...');
+      // console.log('🚗Generating story with data:', formData);
       const res = await storyService.submit({
         storyName: formData.storyName,
         hobbies: formData.hobbies,
@@ -75,7 +76,6 @@ export default function StoryPage() {
     } catch (error) {
       console.error('Error generating story:', error);
     } finally {
-      setIsGenerating(false);
       router.push(`/story/${storyId}/view`);
     }
   };
@@ -86,7 +86,7 @@ export default function StoryPage() {
         return (
           <div className='space-y-4'>
             <Label>Upload Child&apos;s Photo</Label>
-            <ImageUpload onImageUpload={(file) => setFormData({ ...formData, photo: file })} />
+            <ImageUpload previewProps={userPhotoPreview} setPreviewImage={setUserPhotoPreview} onImageUpload={(file) => setFormData({ ...formData, photo: file })} />
             <p className='text-sm text-muted-foreground'>
               Upload a photo to personalize the story. The AI will use this to create illustrations.
             </p>
@@ -131,9 +131,20 @@ export default function StoryPage() {
           <div className='space-y-4'>
             <StoryPreview story={previewStory} isGenerating={isGenerating} />
             {!previewStory && (
-              <div className='py-8 text-center'>
+              <div className='py-8 text-center flex flex-col gap-2'>
                 <p className='text-muted-foreground'>
-                  Click &quot;Generate Story&quot; to create your personalized story.
+                  Story Name:  {`${formData['storyName'] ?? 'Not set'}`}
+                </p>
+                <p className='text-muted-foreground'>
+                  Story Description: {`${formData['description'] ?? 'Not set'}`}
+                </p>
+                <img
+                  src={userPhotoPreview ?? undefined}
+                  alt="Preview"
+                  className="mx-auto h-32 w-32 object-cover rounded-lg"
+                />
+                <p className='text-muted-foreground'>
+                  Hobbies: {`${formData['hobbies'].join(', ')}`}
                 </p>
               </div>
             )}
