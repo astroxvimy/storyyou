@@ -40,7 +40,6 @@ export async function signInWithEmail(email: string, password: string): Promise<
   });
   
   if (error) {
-    console.error(error);
     return { data: null, error: error };
   }
 

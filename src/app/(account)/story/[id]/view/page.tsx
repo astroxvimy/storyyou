@@ -1,17 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
 import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text } from '@react-pdf/renderer';
-
-// interface Story {
-//   id: string;
-//   title: string;
-//   status: 'pending' | 'text_processing' | 'text_complete' | 'image_processing' | 'image_complete' | 'complete';
-// }
+import { Font } from '@react-pdf/renderer';
 
 type Story = Database['public']['Tables']['stories']['Insert'];
 
@@ -26,22 +21,49 @@ interface StoryWithPages extends Story {
   story_pages: StoryPage[];
 }
 
+Font.register({
+  family: 'OrangeJuice',
+  src: '/Orange_Juice_Regular.otf', // Place your font in the public/fonts directory
+});
+
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontSize: 16,
+    fontSize: 18,
     flexDirection: 'column',
     justifyContent: 'flex-start',
+    fontFamily: 'OrangeJuice',
+  },
+  header: {
+    position: 'absolute',
+    top: 20,
+    left: 40,
+    right: 40,
+    textAlign: 'center',
+    fontSize: 20,
+    color: '#888',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 40,
+    right: 40,
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#888',
   },
   text: {
-    marginBottom: 10,
+    marginTop: 10,
+    letterSpacing: 1.2,
+    lineHeight: 1.4,
   },
   image: {
-    width: 400,
-    height: 300,
-    marginTop: 10,
-    marginLeft: 'auto',
-    marginRight: 'auto',
+    width: '100%',
+    height: 'auto',
+    marginLeft: 0,
+    marginRight: 0,
+    objectFit: 'contain',
+    marginBottom: 10,
   },
 });
 
@@ -49,9 +71,10 @@ const StoryPDF = ({ story }: { story: StoryWithPages }) => (
   <Document>
     {story.story_pages.map((page, index) => (
       <Page key={index} style={styles.page}>
-        <Text style={styles.text}>Page {page.page_number}</Text>
-        <Text style={styles.text}>{page.page_text}</Text>
+        <Text style={styles.header}>{story.story_name}</Text>
         {page.page_image && <Image src={page.page_image} style={styles.image} />}
+        <Text style={styles.text}>{page.page_text}</Text>
+        <Text style={styles.footer}>Page {page.page_number}</Text>
       </Page>
     ))}
   </Document>
@@ -60,21 +83,21 @@ const StoryPDF = ({ story }: { story: StoryWithPages }) => (
 export default function StoryViewPage() {
   const params = useParams();
   const routeId = typeof params?.id === 'string' ? params.id : null;
-  const [stories, setStories] = useState<Story[]>([]);
+  // const [stories, setStories] = useState<Story[]>([]);
   const [currentStoryId, setCurrentStoryId] = useState<string | null>(routeId);
   console.log('🚗😀😀😀Current story ID:', currentStoryId);
   const [currentStory, setCurrentStory] = useState<StoryWithPages | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
-  const [isImagePolling, setIsImagePolling] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'text_polling' | 'image_polling' | 'image_failed'>('idle');
+  const [statusText, setStatusText] = useState('');
 
   // Load stories on mount
   useEffect(() => {
-    const fetchStories = async () => {
-      const storiesData = await storyService.getStories();
-      console.log('🚗Fetched stories:', storiesData.data);
-      setStories(storiesData.data.stories);
-    };
-    fetchStories();
+    // const fetchStories = async () => {
+    //   const storiesData = await storyService.getStories();
+    //   console.log('🚗Fetched stories:', storiesData.data);
+    //   setStories(storiesData.data.stories);
+    // };
+    // fetchStories();
   }, []);
 
   // poll for text status
@@ -82,76 +105,84 @@ export default function StoryViewPage() {
     if (!currentStoryId) return;
 
     let interval: NodeJS.Timeout | null = null;
-    console.log('🚗Current story ID:', currentStoryId);
-    const fetchStory = async () => {
-      // const res = await fetch(`/api/story/${currentStoryId}`);
-      const res = await storyService.getStoryStatus(currentStoryId);
-      const data = res.data;
-      // setCurrentStory(data);
-      console.log('🚗Fetched story:', data);
-      if (data.status === 'text_complete') {
-        console.log('🚗Text generation complete, starting image generation...');
-        clearInterval(interval!);
-        setIsPolling(false);
-        storyService.generateImages(currentStoryId);
-        console.log('🚗Image generation started');
-        setIsImagePolling(true);
-      } else {
-        console.log('🚗Text not complete yet:', data.status);
+
+    const pollStoryStatus = async () => {
+      try {
+        const res = await storyService.getStoryStatus(currentStoryId);
+        const data = res.data;
+        console.log('🚗 Fetched story:', data);
+
+        if (status === 'text_polling' && data.status === 'text_complete') {
+          console.log('🚗 Text complete, starting image generation...');
+          await storyService.generateImages(currentStoryId);
+
+          setStatusText('Your story model generating your story images ...');
+          setStatus('image_polling');
+        } else if (
+          (status === 'text_polling' && data.status === 'image_complete') ||
+          (status === 'text_polling' && data.status === 'image_incomplete')
+        ) {
+          setStatusText('Your story model generating your story images ...');
+          setStatus('image_polling');
+        }
+
+        if (status === 'image_polling') {
+          if (data.status === 'image_complete') {
+            clearInterval(interval!);
+            const res = await storyService.getStory(currentStoryId);
+            setStatusText('Congratulations, your story is ready!');
+            setCurrentStory(res.data.story);
+            console.log('🚗 Image generation complete. Generating book...');
+            // storyService.generateBook(currentStoryId);
+            setStatus('idle');
+          } else if (data.status === 'image_incomplete') {
+            console.log('🚗 Image generation failed. Retrying...');
+            await storyService.generateImages(currentStoryId); // Retry image generation
+          }
+        }
+      } catch (error) {
+        console.error('🚗 Error in polling:', error);
+        setStatus('idle');
+        if (interval) clearInterval(interval);
       }
     };
 
-    interval = setInterval(fetchStory, 3000);
-    setIsPolling(true);
-    fetchStory(); // initial fetch immediately
+    // Start polling based on status
+    if (status === 'text_polling' || status === 'image_polling') {
+      interval = setInterval(pollStoryStatus, 3000);
+    }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentStoryId, isPolling]);
+  }, [currentStoryId, status]);
 
-  // Poll for image status
   useEffect(() => {
-    if (!currentStoryId || !isImagePolling) return;
-
-    const fetchStoryWithImages = async () => {
-      const res = await storyService.getStoryStatus(currentStoryId);
-      const story = res.data;
-      // setCurrentStory(story);
-
-      if (story.status === 'image_complete') {
-        setIsImagePolling(false);
-        console.log('🚗Image generation complete');
-        const res = await storyService.getStory(currentStoryId);
-        setCurrentStory(res.data.story);
-        console.log('🚗generating book for: ', currentStoryId);
-
-        // storyService.generateBook(currentStoryId);
-        return;
-      }
-    };
-
-    const interval = setInterval(fetchStoryWithImages, 3000);
-
-    return () => clearInterval(interval);
-  }, [currentStoryId, isImagePolling]);
+    if (currentStoryId) {
+      setStatus('text_polling');
+      setStatusText('Your story model generating your story ...');
+    }
+  }, [currentStoryId]);
 
   // Handle selecting the current story (top button)
-  const handleSelectCurrent = async () => {
-    const res = await fetch('/api/story/current');
-    const { id } = await res.json();
-    setCurrentStoryId(id);
-  };
+  // const handleSelectCurrent = async () => {
+  //   const res = await fetch('/api/story/current');
+  //   const { id } = await res.json();
+  //   setCurrentStoryId(id);
+  // };
 
   return (
     <div className='mx-auto max-w-4xl p-4'>
-      <h1 className='mb-4 text-2xl font-bold'>Your Stories</h1>
+      <h1 className='mb-4 text-2xl font-bold'>Your Current Story</h1>
 
-      <button onClick={handleSelectCurrent} className='mb-4 rounded bg-blue-500 px-4 py-2 text-white'>
+      {status !== 'idle' && <div>Your story is on generation, please wait for a while</div>}
+      <div>{statusText}</div>
+
+      {/* <button onClick={handleSelectCurrent} className='mb-4 rounded bg-blue-500 px-4 py-2 text-white'>
         View Current Story
-      </button>
+      </button> */}
 
-      <div className='mb-6 flex gap-4'>
+      {/* <div className='mb-6 flex gap-4'>
         {stories.map((story) => (
           <button
             key={story.id}
@@ -161,7 +192,7 @@ export default function StoryViewPage() {
             {story?.story_name || 'Untitled Story'}
           </button>
         ))}
-      </div>
+      </div> */}
 
       {currentStory && (
         <div>

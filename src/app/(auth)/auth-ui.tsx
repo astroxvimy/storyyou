@@ -52,13 +52,12 @@ export function AuthUI({
         variant: 'destructive',
         description: 'An error occurred while authenticating. Please try again.',
       });
-    } if (response?.data) {
+    } else if (response?.data) {
       toast({
         variant: 'default',
         description: 'Successfully logined!'
       })
-    }
-     else {
+    } else {
       toast({
         description: `To continue, click the link in the email sent to: ${email}`,
       });
@@ -148,7 +147,7 @@ export function AuthUI({
                     Cancel
                   </Button>
                   <Button variant='secondary' type='submit'>
-                    Submit
+                    {mode === 'signup' ? `Submit` : `login`}
                   </Button>
                 </div>
               </form>
@@ -156,6 +155,12 @@ export function AuthUI({
           </CollapsibleContent>
         </Collapsible>
       </div>
+      {mode === 'signup' && (
+        <Link href='/login'><span>Already have an account?</span></Link>
+      )}
+      {mode === 'login' && (
+        <Link href='/signup'><span>New to Storyou?</span></Link>
+      )}
       {mode === 'signup' && (
         <span className='text-neutral5 m-auto max-w-sm text-sm'>
           By clicking continue, you agree to our{' '}

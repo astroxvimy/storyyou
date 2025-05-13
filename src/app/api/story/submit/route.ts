@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
     // do the background job
 
     // Call the supabase edge function
-    generateStoryText({ storyId: data.id, storyName: data.story_name ?? '', hobbies: data.hobbies ?? [] });
+    generateStoryText({
+      storyId: data.id,
+      storyName: data.story_name ?? '',
+      storyDetail: data.story_detail ?? '',
+      hobbies: data.hobbies ?? [],
+    });
   } catch (error) {
     return NextResponse.json({ error }, { status: 500 });
   } finally {

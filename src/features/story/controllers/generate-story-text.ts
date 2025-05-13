@@ -6,19 +6,21 @@ const supabaseAnonKey = getEnvVar(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, 'NE
 export async function generateStoryText({
   storyId,
   storyName,
+  storyDetail,
   hobbies,
 }: {
   storyId: string;
   storyName: string;
+  storyDetail: string;
   hobbies: string[];
 }) {
   const res = await fetch(`${supabaseUrl}/functions/v1/generate_story_text`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${supabaseAnonKey}`,
+      Authorization: `Bearer ${supabaseAnonKey}`,
     },
-    body: JSON.stringify({ storyId, storyName, hobbies }),
+    body: JSON.stringify({ storyId, storyName, storyDetail, hobbies }),
   });
 
   const data = await res.json();

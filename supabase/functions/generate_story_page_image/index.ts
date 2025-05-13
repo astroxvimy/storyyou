@@ -31,15 +31,14 @@ Deno.serve(async (req) => {
   // const supabaseUserClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const supabaseAdminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+  const { pageId, image_prompt } = await req.json();
+
+  const { data: pageData, error: pageError } = await supabaseAdminClient
+    .from('story_pages')
+    .select('story_id')
+    .eq('id', pageId)
+    .single();
   try {
-    const { pageId, image_prompt } = await req.json();
-
-    const { data: pageData, error: pageError } = await supabaseAdminClient
-      .from('story_pages')
-      .select('story_id')
-      .eq('id', pageId)
-      .single();
-
     if (pageError) throw pageError;
 
     const { error: updateStoryError } = await supabaseAdminClient
@@ -56,6 +55,7 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
       },
       body: JSON.stringify({
+        model: 'gpt-image-1',
         prompt: image_prompt,
         size: '1024x1024',
         n: 1,
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
     const imageRes = await fetch(url);
     if (!imageRes.ok) throw new Error('Failed to download image from OpenAI');
 
-    const imageBuffer = new Uint8Array(await imageRes.arrayBuffer());
+    const imageBuffer = imageRes && new Uint8Array(await imageRes.arrayBuffer());
 
     const fileName = `${crypto.randomUUID()}.png`;
     const filePath = `story-images/${fileName}`;
@@ -127,6 +127,7 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
+    await supabaseAdminClient.from('stories').update({ story_status: 'image_incomplete' }).eq('id', pageData.story_id);
     console.error('Error:', err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,

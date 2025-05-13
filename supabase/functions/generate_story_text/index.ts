@@ -17,6 +17,29 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+type Input = {
+  title: string;
+  hobbies: string[];
+  detail: string;
+};
+
+type CharacterDescription = {
+  name: string;
+  age: string;
+  gender: string;
+  description: string; // vivid, visual, emotionally expressive
+};
+
+type StoryPage = {
+  text: string;
+  image_prompt: string;
+};
+
+type FullStory = {
+  pageTexts;
+  imagePrompts;
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
@@ -25,14 +48,17 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: corsHeaders });
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+      status: 405,
+      headers: corsHeaders,
+    });
   }
 
   // const supabaseUserClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const supabaseAdminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const { storyId, storyName, hobbies } = await req.json();
+    const { storyId, storyName, storyDetail, hobbies } = await req.json();
 
     const { error: initialUpdateError } = await supabaseAdminClient
       .from('stories')
@@ -40,75 +66,19 @@ Deno.serve(async (req) => {
       .eq('id', storyId);
 
     if (initialUpdateError) throw initialUpdateError;
-    console.log('🚗🚗🚗🚗🚗open ai key:', `Bearer ${Deno.env.get('OPENAI_API_KEY')}`);
-    // Call OpenAI API using fetch
-    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content:
-              "You are a creative children's story writer. Your goal is to write engaging and imaginative stories suitable for illustrated storybooks with 5 to 10 pages. The tone should be adventurous, fun, and age-appropriate.",
-          },
-          {
-            role: 'user',
-            content: `Create a detailed children's story titled "${storyName}". 
-                The main character(s) should be inspired by the following hobbies or interests: ${hobbies.join(', ')}. 
-                The story should be between 500 to 800 words and should include a clear beginning, middle, and end, featuring a fun and exciting adventure. 
-                Each part of the story should include vivid descriptions suitable for illustrations. Make it creative, imaginative, and appropriate for young children.`,
-          },
-        ],
-        max_tokens: 1500,
-      }),
+    const result = await generateFullStory({
+      title: storyName,
+      hobbies: hobbies,
+      detail: storyDetail,
     });
-
-    const openaiJson = await openaiRes.json();
-    const text = openaiJson.choices?.[0]?.message?.content ?? '';
-
-    const chunks = splitTextIntoChunks(text);
-
-    console.log('🚗🚗🚗🚗🚗OpenAI response:', chunks);
-
     // Insert pages into story_pages table
-    for (let i = 0; i < chunks.length; i++) {
-      const pageText = chunks[i];
-
-      const promptGenRes = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'user',
-              content: `Create a concise, vivid visual description (max 100 words) suitable for DALL·E image generation of this children's story page: "${pageText}"`,
-            },
-            {
-              role: 'user',
-              content: `Create a visual description prompt suitable for a DALL·E image generation of this children's story page: "${pageText}"`,
-            },
-          ],
-        }),
-      });
-
-      const promptJson = await promptGenRes.json();
-      const imagePrompt = promptJson.choices?.[0]?.message?.content?.trim() ?? '';
-
+    for (let i = 0; i < result.pageTexts.length; i++) {
       const { error } = await supabaseAdminClient.from('story_pages').insert([
         {
           story_id: storyId,
           page_number: i + 1,
-          page_text: chunks[i],
-          image_prompt: imagePrompt,
+          page_text: result.pageTexts[i],
+          image_prompt: result.imagePrompts[i],
         },
       ]);
       if (error) {
@@ -138,33 +108,189 @@ Deno.serve(async (req) => {
   }
 });
 
-function splitTextIntoChunks(text: string, targetWordsPerChunk = 250): string[] {
-  const sentences =
-    text
-      .match(/[^.!?]+[.!?]+[\])'"`’”]*|\s*$/g)
-      ?.map((s) => s.trim())
-      .filter(Boolean) || [];
-  const chunks: string[] = [];
+export async function generateFullStory(input: Input): Promise<FullStory> {
+  const plot = await generatePlot(input);
+  const pagePlots = await generatePagePlots(plot);
+  const characters = await generateCharacterDescriptions(plot);
+  const pageTexts = await generatePageTexts(plot, pagePlots);
+  const imagePrompts = await generatePageImagePrompts(plot, pagePlots, characters);
 
-  let currentChunk = '';
-  let currentWordCount = 0;
+  // Modify image prompts to include character descriptions in a richer format
+  const updatedImagePrompts = imagePrompts.map((imagePrompt, index) => {
+    // Combine the image prompt with detailed character descriptions for each page
+    const characterDescriptions = characters
+      .map((character) => {
+        return `
+Character Name: ${character.name}
+- Age: ${character.age}
+- Gender: ${character.gender}
+- Description: ${character.description}`;
+      })
+      .join('\n');
 
-  for (const sentence of sentences) {
-    const sentenceWordCount = sentence.split(/\s+/).length;
+    return `${imagePrompt}\n\nHere is the character description for this scene, which includes key details about each character involved:\n${characterDescriptions}`;
+  });
 
-    if (currentWordCount + sentenceWordCount > targetWordsPerChunk && currentChunk) {
-      chunks.push(currentChunk.trim());
-      currentChunk = sentence + ' ';
-      currentWordCount = sentenceWordCount;
-    } else {
-      currentChunk += sentence + ' ';
-      currentWordCount += sentenceWordCount;
-    }
+  const reducedPrompts: string[] = [];
+  for (const prompt of updatedImagePrompts) {
+    const reduced = await callGPT(
+      `Please rewrite the following illustration prompt to be under 900 characters. It must be less than 900 characters:\n\n${prompt}`
+    );
+    reducedPrompts.push('Generate Ghibli style image. ' + reduced);
   }
 
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
-  }
+  return {
+    pageTexts,
+    imagePrompts: reducedPrompts,
+  };
+}
 
-  return chunks;
+async function generatePlot(input: Input): Promise<string> {
+  const prompt = `
+Create a creative and magical children's story plot based on the following:
+
+- Title: ${input.title}
+- Hobbies: ${input.hobbies.join(', ')}
+- Detail: ${input.detail}
+
+The plot should be imaginative, emotionally warm, and structured as a complete narrative with a beginning, middle, and end. Keep it suitable for children ages 5–8. Use 1–2 paragraphs.
+`.trim();
+
+  return (await callGPT(prompt)).trim();
+}
+
+async function generatePagePlots(plot: string): Promise<string[]> {
+  const prompt = `
+From the following children's story plot, extract 7 vivid and sequential story moments (scenes), each corresponding to one illustrated page.
+
+Format:
+1. ...
+2. ...
+...
+7. ...
+
+Make each scene visually rich and distinct, reflecting character emotions, actions, and setting.
+
+Plot:
+${plot}
+`.trim();
+
+  const response = await callGPT(prompt);
+  return response
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => /^\d+\.\s/.test(l))
+    .map((l) => l.replace(/^\d+\.\s*/, ''));
+}
+
+async function generateCharacterDescriptions(plot: string): Promise<CharacterDescription[]> {
+  const prompt = `
+Based on the story plot below, identify all key characters and describe them vividly for illustration purposes.
+
+For each character, include:
+- Name (invent if needed)
+- Age group (child, teen, adult, elder)
+- Gender
+- Visual description: detailed clothing, facial features, hairstyle, accessories, posture, and expressive personality cues. Use color-rich and emotionally expressive language.
+
+Return JSON array:
+[
+  {
+    "name": "Lina",
+    "age": "child",
+    "gender": "female",
+    "description": "A cheerful young girl with long wavy auburn hair tied with a sunflower clip, wearing a sky-blue tunic with white embroidered stars, yellow boots, and a red satchel. Her eyes are wide with curiosity and her cheeks always slightly flushed."
+  },
+  ...
+]
+
+Story Plot:
+${plot}
+`.trim();
+
+  const response = await callGPT(prompt);
+
+  try {
+    const parsed = JSON.parse(response);
+    if (Array.isArray(parsed)) return parsed;
+    throw new Error('Invalid format');
+  } catch (err) {
+    console.error('Failed to parse characters:', err);
+    return [];
+  }
+}
+
+async function generatePageTexts(plot: string, pagePlots: string[]): Promise<string[]> {
+  const prompt = `
+Using the full story plot and these 7 scenes, write one short paragraph per scene (5–6 sentences) for a children's storybook.
+
+Each paragraph should:
+- Match the scene
+- Reflect the characters and tone
+- Use simple, vivid, and emotionally warm storytelling
+
+Plot:
+${plot}
+
+Scenes:
+${pagePlots.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+`.trim();
+
+  const response = await callGPT(prompt);
+  return response
+    .split('\n\n')
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+async function generatePageImagePrompts(
+  plot: string,
+  pagePlots: string[],
+  characters: CharacterDescription[]
+): Promise<string[]> {
+  const characterList = characters.map((c) => `${c.name}: ${c.description}`).join('\n');
+
+  return pagePlots.map((scene, index) =>
+    `
+Highly detailed children's book illustration for page ${index + 1}.
+
+Scene: ${scene}
+
+Story Summary:
+${plot}
+
+Main Characters:
+${characterList}
+
+Illustration Style:
+- Soft hand-painted textures, gentle pastels
+- Consistent character designs across pages
+- Whimsical, imaginative landscapes and magical realism
+- Emotionally expressive faces and storytelling poses
+- Balanced foreground and background composition
+
+Do not include text or narration — just the visual description for generating a cohesive illustration.
+`.trim()
+  );
+}
+
+// ------------------------ GPT Helper ------------------------
+
+async function callGPT(prompt: string): Promise<string> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4.1',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2500,
+      temperature: 0.9,
+    }),
+  });
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content ?? '';
 }
