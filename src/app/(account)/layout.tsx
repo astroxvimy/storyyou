@@ -1,7 +1,7 @@
-import { getSession } from "@/features/account/controllers/get-session";
+import { PropsWithChildren } from "react";
 import { redirect } from "next/navigation";
 
-import { PropsWithChildren } from "react";
+import { getSession } from "@/features/account/controllers/get-session";
 
 export default async function AccountLayout({children} :PropsWithChildren) {
     const session = await getSession();

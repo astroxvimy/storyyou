@@ -3,11 +3,12 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { readableStreamFromReader } from 'https://deno.land/std@0.203.0/streams/mod.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import PDFDocument from 'https://esm.sh/pdfkit';
-import { readableStreamFromReader } from 'https://deno.land/std@0.203.0/streams/mod.ts';
 import { Buffer } from 'node:buffer';
+
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
 const SUPABASE_URL = Deno.env.get('NEXT_PUBLIC_SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SERVICE_ROLE_KEY')!;

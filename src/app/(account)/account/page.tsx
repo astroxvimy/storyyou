@@ -1,4 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -8,7 +9,6 @@ import { getSubscription } from '@/features/account/controllers/get-subscription
 import { PricingCard } from '@/features/pricing/components/price-card';
 import { getProducts } from '@/features/pricing/controllers/get-products';
 import { Price, ProductWithPrices } from '@/features/pricing/types';
-import Image from 'next/image';
 
 export default async function AccountPage() {
   const [session, subscription, products] = await Promise.all([getSession(), getSubscription(), getProducts()]);

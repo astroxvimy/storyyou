@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+
 import { Badge } from '@/components/ui/badge';
-import { Cross1Icon } from '@radix-ui/react-icons';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { Cross1Icon } from '@radix-ui/react-icons';
 
 const commonHobbies = [
   'Soccer', 'Basketball', 'Drawing', 'Painting', 'Dancing',
