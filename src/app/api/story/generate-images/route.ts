@@ -13,12 +13,12 @@ export async function POST(req: NextRequest) {
     const storyPages = await getPages(storyId);
     console.log('🚗Fetched story pages:', storyPages);
 
-    const pagesWithoutImages = storyPages.filter(page => !page.page_image);
+    const pagesWithoutImages = storyPages.filter((page) => !page.page_image);
     console.log('🥰 Page without images', pagesWithoutImages);
 
     // Call the supabase edge function for image generation
     for (const storyPage of pagesWithoutImages) {
-      await delay(150);
+      await delay(2000);
       console.log('🚗Generating image for page:', storyPage.id);
       console.log('🚓Page text:', storyPage.page_text);
       console.log('🚕Page image:', storyPage.page_image);

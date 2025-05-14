@@ -216,6 +216,7 @@ ${plot}
     throw new Error('Invalid format');
   } catch (err) {
     console.error('Failed to parse characters:', err);
+    console.error('Raw response:', response);
     return [];
   }
 }
