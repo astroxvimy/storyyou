@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
-import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text } from '@react-pdf/renderer';
+import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { Font } from '@react-pdf/renderer';
 
 type Story = Database['public']['Tables']['stories']['Insert'];
@@ -21,62 +21,133 @@ interface StoryWithPages extends Story {
   story_pages: StoryPage[];
 }
 
+const BACKGROUND_IMAGE_URL = '/background.jpeg'; // Update this path as needed
+const BAND_IMAGE_URL = '/band.png'; // Update this path as needed
+
 Font.register({
   family: 'OrangeJuice',
   src: '/Orange_Juice_Regular.otf', // Place your font in the public/fonts directory
 });
 
+Font.register({
+  family: 'HappyCartoonDemoRegular',
+  src: '/HappyCartoonDemoRegular.ttf', // Place your font in the public/fonts directory
+});
+
 const styles = StyleSheet.create({
+  pageBackgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '100%',
+  },
+  imageBackground: {
+    height: '100%',
+    width: '100%',
+  },
   page: {
-    padding: 40,
-    fontSize: 18,
+    position: 'relative', // Ensure children can be absolutely positioned
+
+    fontSize: 14,
     flexDirection: 'column',
     justifyContent: 'flex-start',
     fontFamily: 'OrangeJuice',
   },
   header: {
     position: 'absolute',
-    top: 20,
+    marginBottom: 10,
+    top: 60,
     left: 40,
     right: 40,
     textAlign: 'center',
     fontSize: 20,
     color: '#888',
+    zIndex: 0,
   },
   footer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 60,
     left: 40,
     right: 40,
     textAlign: 'center',
     fontSize: 14,
     color: '#888',
   },
+  coverFooter: {
+    position: 'absolute',
+    bottom: 60,
+    left: 40,
+    right: 40,
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#222',
+  },
   text: {
-    marginTop: 10,
+    marginTop: 20,
+    width: '70%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
     letterSpacing: 1.2,
     lineHeight: 1.4,
+    zIndex: 0,
+  },
+  bookTitle: {
+    marginTop: 300,
+    width: '70%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    fontSize: 40,
+    textAlign: 'center',
+    fontFamily: 'HappyCartoonDemoRegular',
+    color: '#8E30B5',
   },
   image: {
-    width: '100%',
+    width: '65%',
     height: 'auto',
-    marginLeft: 0,
-    marginRight: 0,
+    marginTop: 90,
+    marginLeft: 'auto',
+    marginRight: 'auto',
     objectFit: 'contain',
     marginBottom: 10,
+    borderRadius: 10,
+    zIndex: 0,
+  },
+  band: {
+    width: '100%',
+    height: 'auto',
+    marginTop: 170,
+    objectFit: 'contain',
+    zIndex: -1,
   },
 });
 
 const StoryPDF = ({ story }: { story: StoryWithPages }) => (
   <Document>
-    {story.story_pages.map((page, index) => (
-      <Page key={index} style={styles.page}>
-        <Text style={styles.header}>{story.story_name}</Text>
-        {page.page_image && <Image src={page.page_image} style={styles.image} />}
-        <Text style={styles.text}>{page.page_text}</Text>
-        <Text style={styles.footer}>Page {page.page_number}</Text>
-      </Page>
-    ))}
+    {story.story_pages.map((page, index) =>
+      index === 0 ? (
+        <Page key={index} style={styles.page}>
+          <View style={styles.pageBackgroundContainer}>
+            <Image src={page.page_image} style={styles.imageBackground} />
+          </View>
+          <View style={styles.pageBackgroundContainer}>
+            <Image src={BAND_IMAGE_URL} style={styles.band} />
+          </View>
+          <Text style={styles.bookTitle}>{story.story_name}</Text>
+          <Text style={styles.coverFooter}> published by storyou.com </Text>
+        </Page>
+      ) : (
+        <Page key={index} style={styles.page}>
+          <View style={styles.pageBackgroundContainer}>
+            <Image src={BACKGROUND_IMAGE_URL} style={styles.imageBackground} />
+          </View>
+          <Text style={styles.header}> - {story.story_name} - </Text>
+          {page.page_image && <Image src={page.page_image} style={styles.image} />}
+          <Text style={styles.text}>{page.page_text}</Text>
+          <Text style={styles.footer}> -- Page {page.page_number} -- </Text>
+        </Page>
+      )
+    )}
   </Document>
 );
 

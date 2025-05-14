@@ -72,6 +72,17 @@ Deno.serve(async (req) => {
       detail: storyDetail,
     });
     // Insert pages into story_pages table
+    const { error } = await supabaseAdminClient.from('story_pages').insert([
+      {
+        story_id: storyId,
+        page_number: 0,
+        image_prompt: result.imagePrompts[0],
+      },
+    ]);
+    if (error) {
+      console.log('🛵🛵Error inserting page:', error);
+      throw error;
+    }
     for (let i = 0; i < result.pageTexts.length; i++) {
       const { error } = await supabaseAdminClient.from('story_pages').insert([
         {
@@ -111,6 +122,7 @@ Deno.serve(async (req) => {
 export async function generateFullStory(input: Input): Promise<FullStory> {
   const plot = await generatePlot(input);
   const pagePlots = await generatePagePlots(plot);
+  const bookCoverPrompt = await generateBookCoverPrompt(input.title, plot);
   const characters = await generateCharacterDescriptions(plot);
   const pageTexts = await generatePageTexts(plot, pagePlots);
   const imagePrompts = await generatePageImagePrompts(plot, pagePlots, characters);
@@ -131,10 +143,10 @@ Character Name: ${character.name}
     return `${imagePrompt}\n\nHere is the character description for this scene, which includes key details about each character involved:\n${characterDescriptions}`;
   });
 
-  const reducedPrompts: string[] = [];
+  const reducedPrompts: string[] = [bookCoverPrompt];
   for (const prompt of updatedImagePrompts) {
     const reduced = await callGPT(
-      `Please rewrite the following illustration prompt to be under 900 characters. It must be less than 900 characters:\n\n${prompt}`
+      `Please rewrite the following illustration prompt to be under 600 characters. It must be less than 600 characters. One important thing is not to include the content that is not allowed by OpenAI system. Just give me only illustration prompt. :\n\n${prompt}`
     );
     reducedPrompts.push('Generate Ghibli style image. ' + reduced);
   }
@@ -155,8 +167,9 @@ Create a creative and magical children's story plot based on the following:
 
 The plot should be imaginative, emotionally warm, and structured as a complete narrative with a beginning, middle, and end. Keep it suitable for children ages 5–8. Use 1–2 paragraphs.
 `.trim();
-
-  return (await callGPT(prompt)).trim();
+  const res = await callGPT(prompt);
+  console.log('🚗Generated plot:', res);
+  return res.trim();
 }
 
 async function generatePagePlots(plot: string): Promise<string[]> {
@@ -176,6 +189,7 @@ ${plot}
 `.trim();
 
   const response = await callGPT(prompt);
+  console.log('🚗Generated page plots:', response);
   return response
     .split('\n')
     .map((l) => l.trim())
@@ -209,20 +223,21 @@ ${plot}
 `.trim();
 
   const response = await callGPT(prompt);
-
+  console.log('🚗Generated character descriptions:', response);
   try {
     const parsed = JSON.parse(response);
     if (Array.isArray(parsed)) return parsed;
     throw new Error('Invalid format');
   } catch (err) {
     console.error('Failed to parse characters:', err);
+    console.error('Raw response:', response);
     return [];
   }
 }
 
 async function generatePageTexts(plot: string, pagePlots: string[]): Promise<string[]> {
   const prompt = `
-Using the full story plot and these 7 scenes, write one short paragraph per scene (5–6 sentences) for a children's storybook.
+Using the full story plot and these 7 scenes, write one short paragraph per scene (5–6 sentences) for a children's storybook without leading number.
 
 Each paragraph should:
 - Match the scene
@@ -274,6 +289,28 @@ Do not include text or narration — just the visual description for generating 
   );
 }
 
+async function generateBookCoverPrompt(title: string, plot: string): Promise<string> {
+  const prompt = `
+Given the following children's story title and plot, write a single, vivid, and concise illustration prompt for a book cover.
+
+Requirements:
+- Focus on the main theme, mood, and magical atmosphere of the story.
+- Mention the main character(s) and any iconic visual elements.
+- Use color-rich, emotionally expressive, and imaginative language.
+- Do NOT include any text or narration in the prompt.
+- Limit to 2–4 sentences, under 550 characters.
+
+Title: ${title}
+
+Plot:
+${plot}
+`.trim();
+
+  const response = await callGPT(prompt);
+  // Optionally trim or post-process the response if needed
+  return response.trim();
+}
+
 // ------------------------ GPT Helper ------------------------
 
 async function callGPT(prompt: string): Promise<string> {
@@ -290,6 +327,8 @@ async function callGPT(prompt: string): Promise<string> {
       temperature: 0.9,
     }),
   });
+
+  console.log('🚗GPT response:', res);
 
   const data = await res.json();
   return data.choices?.[0]?.message?.content ?? '';

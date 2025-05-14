@@ -28,7 +28,6 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: corsHeaders });
   }
 
-  // const supabaseUserClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const supabaseAdminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   const { pageId, image_prompt } = await req.json();
@@ -48,7 +47,7 @@ Deno.serve(async (req) => {
     if (updateStoryError) throw updateStoryError;
     console.log('😀😀😀', image_prompt);
     // Call DALL·E API (or OpenAI image generation endpoint)
-    const dalleRes = await fetch('https://api.openai.com/v1/images/generations', {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,23 +60,37 @@ Deno.serve(async (req) => {
         n: 1,
       }),
     });
-    console.log('🚗DALL·E response:', dalleRes);
-    const dalleJson = await dalleRes.json();
-    const url = dalleJson.data?.[0]?.url;
-    console.log('🚗Image URL:', url);
-    if (!url) throw new Error('Image generation failed.');
-
-    const imageRes = await fetch(url);
-    if (!imageRes.ok) throw new Error('Failed to download image from OpenAI');
-
-    const imageBuffer = imageRes && new Uint8Array(await imageRes.arrayBuffer());
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('OpenAI error:', errorText);
+      const { error: updateStoryError } = await supabaseAdminClient
+        .from('stories')
+        .update({ story_status: 'image_incomplete' })
+        .eq('id', pageData.story_id);
+      throw new Error('OpenAI API error: ' + errorText);
+    }
+    const resJson = await res.json();
+    const b64 = resJson.data?.[0]?.b64_json;
+    console.log('🚗Image URL:', b64);
+    if (!b64) throw new Error('Image generation failed.');
+    // Decode base64 to Uint8Array
+    function base64ToUint8Array(base64: string): Uint8Array {
+      const binary = atob(base64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes;
+    }
+    const imageBuffer = base64ToUint8Array(b64);
 
     const fileName = `${crypto.randomUUID()}.png`;
     const filePath = `story-images/${fileName}`;
 
     // Upload to supabase storage
     const { data: storageData, error: uploadError } = await supabaseAdminClient.storage
-      .from('images') // Your Supabase storage bucket name
+      .from('images')
       .upload(filePath, imageBuffer, {
         contentType: 'image/png',
         upsert: true,
@@ -124,14 +137,14 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ message: 'Image generated and saved' }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   } catch (err) {
-    await supabaseAdminClient.from('stories').update({ story_status: 'image_incomplete' }).eq('id', pageData.story_id);
+    await supabaseAdminClient.from('stories').update({ story_status: 'image_incomplete' }).eq('id', pageData?.story_id);
     console.error('Error:', err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 });
