@@ -66,7 +66,7 @@ export function PricingCard({
                 ? '$' + yearPrice / 100
                 : monthPrice
                 ? '$' + monthPrice / 100
-                : 'Custom'}
+                : 'One time'}
             </span>
             <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span>
           </div>
@@ -75,12 +75,16 @@ export function PricingCard({
         {!Boolean(price) && product.prices.length > 1 && <PricingSwitch onChange={handleBillingIntervalChange} />}
 
         <div className='m-auto flex w-fit flex-1 flex-col gap-2 px-8 py-4'>
-          {metadata.generatedImages === 'enterprise' && <CheckItem text={`Unlimited banner images`} />}
+          {/* {metadata.generatedImages === 'enterprise' && <CheckItem text={`1 Story book`} />}
           {metadata.generatedImages !== 'enterprise' && (
-            <CheckItem text={`Generate ${metadata.generatedImages} banner images`} />
+            <CheckItem text={`1 chance to create another book with same information if you are not satisfied with first one. 🥰Generate ${metadata.generatedImages} banner images`} />
+            // <CheckItem text={`Generate ${metadata.generatedImages} banner images`} />
           )}
           {<CheckItem text={`${metadata.imageEditor} image editing features`} />}
-          {<CheckItem text={`${metadata.supportLevel} support`} />}
+          {<CheckItem text={`${metadata.supportLevel} support`} />} */}
+          <CheckItem text={`1 Story book`} />
+          <CheckItem text={`1 chance to create another book with same info. 🥰`} />
+          <CheckItem text={`${metadata.supportLevel} support`} />
         </div>
 
         {createCheckoutAction && (
