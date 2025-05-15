@@ -11,18 +11,69 @@ export type Database = {
     Tables: {
       customers: {
         Row: {
+          basic_balance: number | null
+          hobby_balance: number | null
           id: string
+          pro_balance: number | null
           stripe_customer_id: string | null
         }
         Insert: {
+          basic_balance?: number | null
+          hobby_balance?: number | null
           id: string
+          pro_balance?: number | null
           stripe_customer_id?: string | null
         }
         Update: {
+          basic_balance?: number | null
+          hobby_balance?: number | null
           id?: string
+          pro_balance?: number | null
           stripe_customer_id?: string | null
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          price_id: string | null
+          product: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          metadata?: Json | null
+          price_id?: string | null
+          product?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          price_id?: string | null
+          product?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_price_id_fkey"
+            columns: ["price_id"]
+            isOneToOne: false
+            referencedRelation: "prices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prices: {
         Row: {

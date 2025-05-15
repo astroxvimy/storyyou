@@ -54,10 +54,11 @@ export async function POST(req: Request) {
         case 'checkout.session.completed':
           const checkoutSession = event.data.object as Stripe.Checkout.Session;
 
-          if (checkoutSession.mode === 'subscription') {
-            const subscriptionId = checkoutSession.subscription;
+          if (checkoutSession.mode === 'payment') {
+            // const checkoutSessionId = checkoutSession.subscription;
+            const checkoutSessionId = checkoutSession.id;
             await upsertUserSubscription({
-              subscriptionId: subscriptionId as string,
+              subscriptionId: checkoutSessionId as string,
               customerId: checkoutSession.customer as string,
               isCreateAction: true,
             });
