@@ -53,18 +53,27 @@ async function AppBar() {
   return (
     <header className='flex items-center justify-between py-8'>
       <Logo />
+      <HeaderMenu />
       <Navigation />
     </header>
   );
 }
 
+function HeaderMenu() {
+  return (
+    <div className='flex gap-4'>
+      <Link href='create' className='hover:text-green-400 font-bold'>Create</Link>
+      <Link href='gallery' className='hover:text-green-400 font-bold'>Gallery</Link>
+      <Link href='pricing' className='hover:text-green-400 font-bold'>Pricing</Link>
+      <Link href='books' className='hover:text-green-400 font-bold'>Your books</Link>
+    </div>
+  )
+}
+
 function Footer() {
   return (
     <footer className='mt-8 flex flex-col gap-8 text-neutral-400 lg:mt-32'>
-      <div className='flex flex-col justify-between gap-8 lg:flex-row'>
-        <div>
-          <Logo />
-        </div>
+      <div className='flex flex-col justify-end gap-8 lg:flex-row'>
         <div className='grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-4 lg:gap-16'>
           <div className='flex flex-col gap-2 lg:gap-6'>
             <div className='font-semibold text-neutral-100'>Product</div>
@@ -77,12 +86,7 @@ function Footer() {
             <nav className='flex flex-col gap-2 lg:gap-6'>
               <Link href='/about-us'>About Us</Link>
               <Link href='/privacy'>Privacy</Link>
-            </nav>
-          </div>
-          <div className='flex flex-col gap-2 lg:gap-6'>
-            <div className='font-semibold text-neutral-100'>Support</div>
-            <nav className='flex flex-col gap-2 lg:gap-6'>
-              <Link href='/support'>Get Support</Link>
+              <Link href='/terms-and-policy'>Terms and Policy</Link>
             </nav>
           </div>
           <div className='flex flex-col gap-2 lg:gap-6'>

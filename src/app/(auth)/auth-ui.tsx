@@ -12,8 +12,8 @@ import { toast } from '@/components/ui/use-toast';
 import { ActionResponse } from '@/types/action-response';
 
 const titleMap = {
-  login: 'Login to Storyou',
-  signup: 'Join Storyou and start generating banners for free',
+  login: 'Login',
+  signup: 'Signup',
 } as const;
 
 export function AuthUI({
@@ -26,7 +26,6 @@ export function AuthUI({
   signInWithEmail: (email: string, password: string) => Promise<ActionResponse>;
 }) {
   const [pending, setPending] = useState(false);
-  const [emailFormOpen, setEmailFormOpen] = useState(false);
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,97 +80,69 @@ export function AuthUI({
   }
 
   return (
-    <section className='mt-16 flex w-full flex-col gap-16 rounded-lg bg-black p-10 px-4 text-center'>
-      <div className='flex flex-col gap-4'>
-        <Image src='/logo.png' width={80} height={80} alt='' className='m-auto' />
-        <h1 className='text-lg'>{titleMap[mode]}</h1>
+    <section className='mt-16 flex w-full flex-col gap-4 rounded-lg bg-black p-10 px-4 text-center'>
+      <div className='flex flex-col'>
+        <h1 className='text-2xl'>{titleMap[mode]}</h1>
       </div>
-      <div className='flex flex-col gap-4'>
-        <button
-          className='flex items-center justify-center gap-2 rounded-md bg-cyan-500 py-4 font-medium text-black transition-all hover:bg-cyan-400 disabled:bg-neutral-700'
+      <div className='flex flex-col gap-4 px-8'>
+        <div className='w-full'>
+          <form onSubmit={handleEmailSubmit}>
+            <Input
+              type='email'
+              name='email'
+              placeholder='Enter your email'
+              aria-label='Enter your email'
+              autoFocus
+              className='bg-zinc-900'
+            />
+            <Input
+              type='password'
+              name='password'
+              placeholder='Enter your password'
+              aria-label='Enter your password'
+              autoFocus
+              className='mt-2 bg-zinc-900'
+            />
+            {
+              mode === 'signup' &&
+              (<Input
+                type='password'
+                name='passwordConfirm'
+                placeholder='Confirm your password'
+                aria-label='Confirm your password'
+                className='mt-2 bg-zinc-900'
+                autoFocus
+              />)
+            }
+            <div className='mt-4 flex justify-end gap-2'>
+              <Button variant='secondary' type='submit'>
+                {mode === 'signup' ? `Submit` : `login`}
+              </Button>
+            </div>
+          </form>
+        </div>
+        <Button
+          variant="sexy"
+          className='w-full flex items-center gap-4 text-bg-neutral-500 justify-center rounded-mdfont-medium'
           onClick={() => handleOAuthClick('google')}
           disabled={pending}
         >
           <IoLogoGoogle size={20} />
           Continue with Google
-        </button>
-        <button
-          className='flex items-center justify-center gap-2 rounded-md bg-fuchsia-500 py-4 font-medium text-black transition-all hover:bg-fuchsia-400 disabled:bg-neutral-700'
-          onClick={() => handleOAuthClick('github')}
-          disabled={pending}
-        >
-          <IoLogoGithub size={20} />
-          Continue with GitHub
-        </button>
-
-        <Collapsible open={emailFormOpen} onOpenChange={setEmailFormOpen}>
-          <CollapsibleTrigger asChild>
-            <button
-              className='text-neutral6 flex w-full items-center justify-center gap-2 rounded-md bg-zinc-900 py-4 font-medium transition-all hover:bg-zinc-800 disabled:bg-neutral-700 disabled:text-black'
-              disabled={pending}
-            >
-              Continue with Email
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className='mt-[-2px] w-full rounded-b-md bg-zinc-900 p-8'>
-              <form onSubmit={handleEmailSubmit}>
-                <Input
-                  type='email'
-                  name='email'
-                  placeholder='Enter your email'
-                  aria-label='Enter your email'
-                  autoFocus
-                />
-                <Input
-                  type='password'
-                  name='password'
-                  placeholder='Enter your password'
-                  aria-label='Enter your password'
-                  autoFocus
-                  className='mt-2'
-                />
-                {
-                  mode === 'signup' &&
-                  (<Input
-                    type='password'
-                    name='passwordConfirm'
-                    placeholder='Confirm your password'
-                    aria-label='Confirm your password'
-                    className='mt-2'
-                    autoFocus
-                  />)
-                }
-                <div className='mt-4 flex justify-end gap-2'>
-                  <Button type='button' onClick={() => setEmailFormOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant='secondary' type='submit'>
-                    {mode === 'signup' ? `Submit` : `login`}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        </Button>       
       </div>
       {mode === 'signup' && (
-        <Link href='/login'><span>Already have an account?</span></Link>
+        <span>Already have an account? <Link href='/login' className="underline">Login</Link></span>
       )}
       {mode === 'login' && (
-        <Link href='/signup'><span>New to Storyou?</span></Link>
+        <span>New to Storyou? <Link href='/signup' className='underline'>Register</Link></span>
       )}
       {mode === 'signup' && (
         <span className='text-neutral5 m-auto max-w-sm text-sm'>
           By clicking continue, you agree to our{' '}
-          <Link href='/terms' className='underline'>
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link href='/privacy' className='underline'>
-            Privacy Policy
-          </Link>
-          .
+          <Link href='/terms-and-policy' className='underline inline-block'>
+            Terms and Policy
+          </Link>.
         </span>
       )}
     </section>

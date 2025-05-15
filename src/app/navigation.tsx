@@ -19,9 +19,9 @@ export async function Navigation() {
       ) : (
         <>
           <Button variant='sexy' className='hidden flex-shrink-0 lg:flex' asChild>
-            <Link href='/signup'>Get started for free</Link>
+            <Link href='/login'>login</Link>
           </Button>
-          <Sheet>
+          {/* <Sheet>
             <SheetTrigger className='block lg:hidden'>
               <IoMenu size={28} />
             </SheetTrigger>
@@ -35,7 +35,7 @@ export async function Navigation() {
                 </SheetDescription>
               </SheetHeader>
             </SheetContent>
-          </Sheet>
+          </Sheet> */}
         </>
       )}
     </div>

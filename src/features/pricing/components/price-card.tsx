@@ -48,7 +48,7 @@ export function PricingCard({
   const buttonVariantMap = {
     basic: 'default',
     pro: 'sexy',
-    enterprise: 'orange',
+    hobby: 'orange',
   } as const;
 
   function handleBillingIntervalChange(billingInterval: BillingInterval) {
@@ -61,14 +61,14 @@ export function PricingCard({
         <div className='p-4'>
           <div className='mb-1 text-center font-alt text-xl font-bold'>{product.name}</div>
           <div className='flex justify-center gap-0.5 text-zinc-400'>
-            <span className='font-semibold'>
+            {/* <span className='font-semibold'>
               {yearPrice && isBillingIntervalYearly
                 ? '$' + yearPrice / 100
                 : monthPrice
                 ? '$' + monthPrice / 100
                 : 'One time'}
             </span>
-            <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span>
+            <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span> */}
           </div>
         </div>
 
@@ -82,9 +82,11 @@ export function PricingCard({
           )}
           {<CheckItem text={`${metadata.imageEditor} image editing features`} />}
           {<CheckItem text={`${metadata.supportLevel} support`} />} */}
-          <CheckItem text={`1 Story book`} />
-          <CheckItem text={`1 chance to create another book with same info. 🥰`} />
-          <CheckItem text={`${metadata.supportLevel} support`} />
+          <CheckItem text={`${metadata.credit_count} personalized book`} />
+          <CheckItem text={`${metadata.story_length === "basic" ? 'Up to 10 pages per AI generated book' : 'Up to 20 pages per AI generated book'}`} />
+          {metadata.priceCardVariant === "pro" && <CheckItem text="Option for more text content per page" /> }
+          {metadata.priceCardVariant === "pro" && <CheckItem text="Premium book cover that you can generate specially to match your book" /> }
+          {metadata.multi_language === "on" && <CheckItem text="Books in your language" /> }
         </div>
 
         {createCheckoutAction && (
