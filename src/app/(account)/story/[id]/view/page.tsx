@@ -181,10 +181,10 @@ export default function StoryViewPage() {
       try {
         const res = await storyService.getStoryStatus(currentStoryId);
         const data = res.data;
-        console.log('🚗 Fetched story:', data);
+        console.log('🚗Fetched story:', data);
 
         if (status === 'text_polling' && data.status === 'text_complete') {
-          console.log('🚗 Text complete, starting image generation...');
+          console.log('🚗Text complete, starting image generation...');
           await storyService.generateImages(currentStoryId);
 
           setStatusText('Your story model generating your story images ...');
