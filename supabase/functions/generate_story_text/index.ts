@@ -322,7 +322,14 @@ async function callGPT(prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: 'gpt-4.1',
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a helpful and safe AI assistant. Do not produce any harmful, unsafe, or policy-violating content. Follow OpenAI content guidelines strictly.',
+        },
+        { role: 'user', content: prompt },
+      ],
       max_tokens: 2500,
       temperature: 0.9,
     }),

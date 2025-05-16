@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
       await delay(2000);
       console.log('🚗Generating image for page:', storyPage.id);
       console.log('🚓Page text:', storyPage.page_text);
-      console.log('🚕Page image:', storyPage.page_image);
       generateStoryPageImage({
         pageId: storyPage.id,
         image_prompt: storyPage.image_prompt ?? '',
