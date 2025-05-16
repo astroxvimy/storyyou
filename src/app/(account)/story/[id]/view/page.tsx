@@ -185,7 +185,7 @@ export default function StoryViewPage() {
 
         if (status === 'text_polling' && data.status === 'text_complete') {
           console.log('🚗 Text complete, starting image generation...');
-          await storyService.generateImages(currentStoryId);
+          storyService.generateImages(currentStoryId);
 
           setStatusText('Your story model generating your story images ...');
           setStatus('image_polling');
@@ -208,7 +208,7 @@ export default function StoryViewPage() {
             setStatus('idle');
           } else if (data.status === 'image_incomplete') {
             console.log('🚗 Image generation failed. Retrying...');
-            await storyService.generateImages(currentStoryId); // Retry image generation
+            storyService.generateImages(currentStoryId); // Retry image generation
           }
         }
       } catch (error) {
