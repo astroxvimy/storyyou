@@ -8,7 +8,9 @@ export async function POST(req: NextRequest) {
   const { storyId } = await req.json();
   console.log('🚗Received storyId:', storyId);
   try {
-    generateStoryImages({ storyId });
+    const results = await generateStoryImages({ storyId });
+
+    console.log('ImageGeneration Start:', results);
 
     // this is original code, should be implemented on supabase because of response time limit
     // // Get all pages

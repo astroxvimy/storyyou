@@ -32,8 +32,68 @@ Deno.serve(async (req) => {
   const { storyId } = await req.json();
 
   try {
-    const imagesResults = await generateStoryPageImages(storyId, supabaseAdminClient);
-    return new Response(JSON.stringify({ imagesResults }), { headers: corsHeaders });
+    console.log('🚗Received storyId:', storyId);
+
+    const { data: pages, error } = await supabaseAdminClient
+      .from('story_pages')
+      .select('id, image_prompt')
+      .eq('story_id', storyId);
+
+    const pagesWithoutImages = pages.filter((page) => !page.page_image);
+
+    if (error) {
+      throw new Error(`Error fetching pages: ${error.message}`);
+    }
+
+    if (!pages || pages.length === 0) {
+      throw new Error('No pages found for the given story id');
+    }
+    console.log('🚗Fetched story pages:', pages);
+    // Results will contain errors, if any, during the fetch call
+    const results = await Promise.allSettled(
+      pagesWithoutImages.map(async (page) => {
+        const payload = {
+          pageId: page.id,
+          image_prompt: page.image_prompt,
+        };
+
+        // Add a 2-second delay between requests
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate_story_page_image`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`Failed to generate image for page ${page.id}: ${response.statusText}`);
+          }
+
+          console.log(`🚗 Successfully generated image for page ${page.id}`);
+        } catch (err) {
+          console.error(`🚗 Error generating image for page ${page.id}:`, err);
+          throw err;
+        }
+      })
+    );
+
+    // Log results
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        console.log(`🚗 Image generation succeeded for page ${pages[index].id}`);
+      } else {
+        console.error(`🚗 Image generation failed for page ${pages[index].id}:`, result.reason);
+      }
+    });
+    return new Response(JSON.stringify({ result: 'ok' }), { headers: corsHeaders });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
   }
@@ -43,49 +103,6 @@ Deno.serve(async (req) => {
  * Retrieves pages from the "story_pages" table for the given story ID
  * and calls the Supabase Edge Function "generate_story_page_image" for each page.
  */
-async function generateStoryPageImages(storyId: string, supabaseAdminClient: ReturnType<typeof createClient>) {
-  // Query the "story_pages" table to get page ids and image prompts
-  const { data: pages, error } = await supabaseAdminClient
-    .from('story_pages')
-    .select('id, image_prompt')
-    .eq('storyId', storyId);
-
-  const pagesWithoutImages = pages.filter((page) => !page.page_image);
-
-  if (error) {
-    throw new Error(`Error fetching pages: ${error.message}`);
-  }
-
-  if (!pages || pages.length === 0) {
-    throw new Error('No pages found for the given story id');
-  }
-
-  // Results will contain errors, if any, during the fetch call
-  const results: { pageId: string; error?: string }[] = [];
-  for (const page of pagesWithoutImages) {
-    // Build payload for the edge function call
-    const payload = {
-      pageId: page.id,
-      image_prompt: page.image_prompt,
-    };
-
-    // Delay for 2 seconds before making the request
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    fetch(`${SUPABASE_URL}/functions/v1/generate_story_page_image`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify(payload),
-    }).catch((err: any) => {
-      results.push({ pageId: page.id, error: err.message });
-    });
-  }
-
-  return results;
-}
 
 /* To invoke locally:
 

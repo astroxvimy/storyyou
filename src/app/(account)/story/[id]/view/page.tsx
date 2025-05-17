@@ -208,7 +208,7 @@ export default function StoryViewPage() {
             setStatus('idle');
           } else if (data.status === 'image_incomplete') {
             console.log('🚗 Image generation failed. Retrying...');
-            storyService.generateImages(currentStoryId); // Retry image generation
+            await storyService.generateImages(currentStoryId); // Retry image generation
           }
         }
       } catch (error) {
