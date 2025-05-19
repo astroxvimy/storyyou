@@ -196,14 +196,14 @@ export default function StoryPage() {
           <div className='space-y-4'>
             <StoryPreview story={previewStory} isGenerating={isGenerating} />
             {!previewStory && (
-              <div className='flex flex-col gap-2 py-8 text-center'>
+              <div className='flex flex-col gap-2 py-8'>
                 <p className='text-muted-foreground'>
                   <strong>Story Name:</strong> {formData.storyName || 'Not set'}
                 </p>
                 <p className='text-muted-foreground'>
                   <strong>Story Description:</strong> {formData.description || 'Not set'}
                 </p>
-                <img src={userPhotoPreview} alt='Preview' className='mx-auto h-32 w-32 rounded-lg object-cover' />
+                <img src={userPhotoPreview} alt='Preview' className='h-32 w-32 rounded-lg object-cover' />
                 <p className='text-muted-foreground'>
                   <strong>Hobbies:</strong>{' '}
                   {formData.hobbies.length > 0 ? formData.hobbies.join(', ') : 'None selected'}
@@ -237,17 +237,22 @@ export default function StoryPage() {
         <div className='relative min-h-full px-12 py-16 shadow-lg'>
           <img src='/balloon.png' className='absolute bottom-8 right-0 h-48 w-48 opacity-50'></img>
           <CardTitle className='relative mb-8 text-2xl font-bold text-white'>Your Story Summary</CardTitle>
-          <img src={userPhotoPreview} alt='Preview' className='mx-auto h-32 w-32 rounded-lg object-cover' />
-          <div className='relative flex flex-col items-center justify-center'>
-            <ul className='mt-4 w-2/3 space-y-2 text-sm text-gray-200'>
-              <li>
-                <strong>Story Name:</strong> {formData.storyName || 'Not set'}
+          <img src={userPhotoPreview} alt='Preview' className='mb-8 h-32 w-32 rounded-lg  object-cover' />
+          <div className='relative flex flex-col'>
+            <ul className='mt-4 space-y-2 text-sm text-gray-200'>
+              <li className='flex gap-1'>
+                <b className='basis-1/3'>Story Name:</b>
+                <p className='basis-2/3'>{formData.storyName || 'Not set'}</p>
               </li>
-              <li>
-                <strong>Hobbies:</strong> {formData.hobbies.length > 0 ? formData.hobbies.join(', ') : 'None selected'}
+              <li className='flex flex-row gap-1'>
+                <b className='basis-1/3'>Hobbies:</b>
+                <p className='basis-2/3'>
+                  {formData.hobbies.length > 0 ? formData.hobbies.join(', ') : 'None selected'}
+                </p>
               </li>
-              <li>
-                <strong>Description:</strong> <p className='max-w-full'>{formData.description || 'Not set'}</p>
+              <li className='flex flex-row gap-1'>
+                <b className='basis-1/3'>Description:</b>{' '}
+                <p className='basis-2/3'>{formData.description || 'Not set'}</p>
               </li>
             </ul>
           </div>
