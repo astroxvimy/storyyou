@@ -1,11 +1,12 @@
 import Stripe from 'stripe';
 
+import { productMetadataSchema } from '@/features/pricing/models/product-metadata';
 import { stripeAdmin } from '@/libs/stripe/stripe-admin';
 import { supabaseAdminClient } from '@/libs/supabase/supabase-admin';
 import type { Database } from '@/libs/supabase/types';
 // import { toDateTime } from '@/utils/to-date-time';
 import { AddressParam } from '@stripe/stripe-js';
-import { productMetadataSchema } from '@/features/pricing/models/product-metadata';
+
 import { upsertUserBalance } from './update-user-balance';
 // import { metadata } from '@/app/layout';
 

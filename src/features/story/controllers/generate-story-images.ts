@@ -6,14 +6,14 @@ const supabaseAnonKey = getEnvVar(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, 'NE
 /**
  * Calls the Supabase Edge Function to generate an image for a story page.
  */
-export async function generateStoryPageImage({ pageId, image_prompt }: { pageId: string; image_prompt: string }) {
-  const res = await fetch(`${supabaseUrl}/functions/v1/generate_story_page_image`, {
+export async function generateStoryImages({ storyId }: { storyId: string }) {
+  const res = await fetch(`${supabaseUrl}/functions/v1/generate_story_images`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${supabaseAnonKey}`,
     },
-    body: JSON.stringify({ pageId, image_prompt }),
+    body: JSON.stringify({ storyId }),
   });
 
   const data = await res.json();
