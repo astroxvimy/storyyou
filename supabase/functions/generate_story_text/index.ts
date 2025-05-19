@@ -314,29 +314,60 @@ ${plot}
 // ------------------------ GPT Helper ------------------------
 
 async function callGPT(prompt: string): Promise<string> {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4.1',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a helpful and safe AI assistant. Do not produce any harmful, unsafe, or policy-violating content. Follow OpenAI content guidelines strictly.',
+  const maxRetries = 5; // Maximum number of retries
+  let retryCount = 0;
+  let delay = 1000; // Initial delay in milliseconds (1 second)
+
+  while (retryCount < maxRetries) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
         },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: 2500,
-      temperature: 0.9,
-    }),
-  });
+        body: JSON.stringify({
+          model: 'gpt-4.1',
+          messages: [
+            {
+              role: 'system',
+              content:
+                'You are a helpful and safe AI assistant. Do not produce any harmful, unsafe, or policy-violating content. Follow OpenAI content guidelines strictly.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          max_tokens: 2500,
+          temperature: 0.9,
+        }),
+      });
 
-  console.log('🚗GPT response:', res);
+      console.log('🚗GPT response status:', res.status);
 
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? '';
+      if (res.ok) {
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content ?? '';
+      } else if (res.status === 429) {
+        // Too Many Requests - Retry after a delay
+        console.warn(`🚗 Rate limit hit. Retrying in ${delay}ms...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        retryCount++;
+        delay *= 2; // Exponential backoff
+      } else {
+        // Other errors
+        const errorData = await res.json();
+        throw new Error(`OpenAI API error: ${errorData.error?.message || res.statusText}`);
+      }
+    } catch (err) {
+      if (retryCount >= maxRetries - 1) {
+        console.error('🚗 Failed after maximum retries:', err);
+        throw err; // Rethrow the error after max retries
+      }
+      console.warn(`🚗 Error occurred. Retrying in ${delay}ms...`, err);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      retryCount++;
+      delay *= 2; // Exponential backoff
+    }
+  }
+
+  throw new Error('Failed to get a response from OpenAI API after maximum retries.');
 }

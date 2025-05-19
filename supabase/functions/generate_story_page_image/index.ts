@@ -25,28 +25,71 @@ Deno.serve(async (req) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { status: 405, headers: corsHeaders });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Method Not Allowed',
+        code: 405,
+        message: 'Only POST requests are allowed.',
+      }),
+      { status: 405, headers: corsHeaders }
+    );
   }
 
   const supabaseAdminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const { pageId, image_prompt } = await req.json();
-
-  const { data: pageData, error: pageError } = await supabaseAdminClient
-    .from('story_pages')
-    .select('story_id')
-    .eq('id', pageId)
-    .single();
   try {
-    if (pageError) throw pageError;
+    const { pageId, image_prompt } = await req.json();
+
+    if (!pageId || !image_prompt) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid Input',
+          code: 400,
+          message: 'Both pageId and image_prompt are required.',
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    console.log('🚗 Received pageId:', pageId);
+
+    const { data: pageData, error: pageError } = await supabaseAdminClient
+      .from('story_pages')
+      .select('story_id')
+      .eq('id', pageId)
+      .single();
+
+    if (pageError) {
+      throw new Error(`Failed to fetch page data: ${pageError.message}`);
+    }
 
     const { error: updateStoryError } = await supabaseAdminClient
       .from('stories')
       .update({ story_status: 'image_processing' })
       .eq('id', pageData.story_id);
-    if (updateStoryError) throw updateStoryError;
-    console.log('😀😀😀', image_prompt);
-    // Call DALL·E API (or OpenAI image generation endpoint)
+
+    if (updateStoryError) {
+      throw new Error(`Failed to update story status: ${updateStoryError.message}`);
+    }
+
+    const prompt = image_prompt.trim();
+    console.log('🚗 Image prompt:', prompt);
+
+    if (!prompt) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid Prompt',
+          code: 400,
+          message: 'The image prompt is empty or invalid.',
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Call DALL·E 3 API
     const res = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -54,109 +97,87 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: image_prompt,
         size: '1024x1024',
         n: 1,
       }),
     });
+
     if (!res.ok) {
       const errorText = await res.text();
-      console.error('OpenAI error:', errorText);
-      const { error: updateStoryError } = await supabaseAdminClient
-        .from('stories')
-        .update({ story_status: 'image_incomplete' })
-        .eq('id', pageData.story_id);
-      throw new Error('OpenAI API error: ' + errorText);
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${errorText}`);
     }
-    const resJson = await res.json();
-    const b64 = resJson.data?.[0]?.b64_json;
-    console.log('🚗Image URL:', b64);
-    if (!b64) throw new Error('Image generation failed.');
-    // Decode base64 to Uint8Array
-    function base64ToUint8Array(base64: string): Uint8Array {
-      const binary = atob(base64);
-      const len = binary.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-      return bytes;
-    }
-    const imageBuffer = base64ToUint8Array(b64);
 
+    const resJson = await res.json();
+    const imageUrl = resJson.data?.[0]?.url;
+
+    if (!imageUrl) {
+      throw new Error('Image generation failed: No URL returned.');
+    }
+
+    console.log('🚗 Image URL:', imageUrl);
+
+    // Download the image as a binary file
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download the generated image.');
+    }
+    const imageBuffer = new Uint8Array(await imageResponse.arrayBuffer());
+
+    // Generate a unique file name
     const fileName = `${crypto.randomUUID()}.png`;
     const filePath = `story-images/${fileName}`;
 
-    // Upload to supabase storage
-    const { data: storageData, error: uploadError } = await supabaseAdminClient.storage
-      .from('images')
-      .upload(filePath, imageBuffer, {
-        contentType: 'image/png',
-        upsert: true,
-      });
+    // Upload the image to Supabase storage
+    const { error: uploadError } = await supabaseAdminClient.storage.from('images').upload(filePath, imageBuffer, {
+      contentType: 'image/png',
+      upsert: true,
+    });
 
-    if (uploadError) throw uploadError;
-
-    // Generate a public URL
-    const { data: publicUrlData } = supabaseAdminClient.storage.from('images').getPublicUrl(filePath);
-
-    // Update story_page with the image URL
-    const { data: updatedPage, error: updatePageError } = await supabaseAdminClient
-      .from('story_pages')
-      .update({ page_image: publicUrlData.publicUrl })
-      .eq('id', pageId)
-      .select('story_id')
-      .single();
-
-    if (updatePageError) throw updatePageError;
-    const storyId = updatedPage.story_id;
-
-    // Check if all pages of the story have images
-    const { data: pages, error: fetchPagesError } = await supabaseAdminClient
-      .from('story_pages')
-      .select('page_image')
-      .eq('story_id', storyId);
-
-    if (fetchPagesError) throw fetchPagesError;
-
-    const allPagesHaveImages = pages.every((p) => p.page_image);
-    if (allPagesHaveImages) {
-      const { error: updateStoryError } = await supabaseAdminClient
-        .from('stories')
-        .update({ story_status: 'image_complete' })
-        .eq('id', storyId);
-      if (updateStoryError) throw updateStoryError;
-    } else {
-      const { error: updateStoryError } = await supabaseAdminClient
-        .from('stories')
-        .update({ story_status: 'image_incomplete' })
-        .eq('id', storyId);
-      if (updateStoryError) throw updateStoryError;
+    if (uploadError) {
+      throw new Error(`Failed to upload image to storage: ${uploadError.message}`);
     }
 
-    return new Response(JSON.stringify({ message: 'Image generated and saved' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    // Generate a public URL for the uploaded image
+    const { data: publicUrlData } = supabaseAdminClient.storage.from('images').getPublicUrl(filePath);
+
+    if (!publicUrlData.publicUrl) {
+      throw new Error('Failed to generate public URL for the uploaded image.');
+    }
+
+    console.log('🚗 Public URL:', publicUrlData.publicUrl);
+
+    // Update story_page with the public URL of the image
+    const { error: updatePageError } = await supabaseAdminClient
+      .from('story_pages')
+      .update({ page_image: publicUrlData.publicUrl })
+      .eq('id', pageId);
+
+    if (updatePageError) {
+      throw new Error(`Failed to update story page: ${updatePageError.message}`);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Image generated and saved successfully.',
+        imageUrl: publicUrlData.publicUrl,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+    );
   } catch (err) {
-    await supabaseAdminClient.from('stories').update({ story_status: 'image_incomplete' }).eq('id', pageData?.story_id);
-    console.error('Error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    console.error('🚗 Error:', err);
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Internal Server Error',
+        code: 500,
+        message: err.message,
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+    );
   }
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/generate_story_page_image' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
