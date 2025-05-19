@@ -8,7 +8,7 @@ export async function getCustomerBalance({ userId }: { userId: string }) {
     const balances = await  Promise.all([basicBalance, proBalance, hobbyBalance]);
 
     const totalBalnce = balances.filter(b => b != null).reduce((s, v) => (s ?? 0) + (v ?? 0), 0);
-    return totalBalnce;
+    return totalBalnce  ?? 0;
 
   } catch (error) {
     throw new Error('Error fetching customer balance');
@@ -22,13 +22,11 @@ export async function getCustomerBasicBalance({ userId }: { userId: string }) {
     .eq('id', userId)
     .single();
 
-    console.log('Basic🦋\n', userId, '\n', data?.basic_balance);
-
     if (error) {
       throw new Error('Error fetching customer basic balance');
     }
 
-  return data.basic_balance;
+  return data.basic_balance ?? 0;
 }
 
 export async function getCustomerProBalance({ userId }: { userId: string }) {
@@ -37,13 +35,12 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
     .select('pro_balance')
     .eq('id', userId)
     .single();
-    console.log('Pro🦋\n', userId, '\n', data?.pro_balance);
 
   if (error) {
     throw new Error('Error fetching customer pro balance');
   }
 
-  return data.pro_balance;
+  return data.pro_balance ?? 0;
 }
 
 
@@ -54,11 +51,9 @@ export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
     .eq('id', userId)
     .single();
 
-    console.log('Hobby🦋\n', userId, '\n', data?.hobby_balance);
-
   if (error) {
     throw new Error('Error fetching customer hobby balance');
   }
 
-  return data.hobby_balance;
+  return data.hobby_balance ?? 0;
 }

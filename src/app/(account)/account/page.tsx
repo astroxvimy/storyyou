@@ -1,82 +1,43 @@
-import { PropsWithChildren, ReactNode } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-
-import { Button } from '@/components/ui/button';
+import { FaUser } from "react-icons/fa";
 import { getSession } from '@/features/account/controllers/get-session';
-import { getSubscription } from '@/features/account/controllers/get-subscription';
-import { PricingCard } from '@/features/pricing/components/price-card';
-import { getProducts } from '@/features/pricing/controllers/get-products';
-import { Price, ProductWithPrices } from '@/features/pricing/types';
+import { getCustomerBalance, getCustomerBasicBalance, getCustomerHobbyBalance, getCustomerProBalance } from '@/features/account/controllers/get-balance';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { cn } from '@/utils/cn';
 
 export default async function AccountPage() {
-  const [session, subscription, products] = await Promise.all([getSession(), getSubscription(), getProducts()]);
+  const session = await getSession();
+  const [total, basic, hobby, pro] = await Promise.all([getCustomerBalance({userId: session?.user.id ?? ''}), getCustomerBasicBalance({userId: session?.user.id ?? ''}), getCustomerHobbyBalance({userId: session?.user.id ?? ''}), getCustomerProBalance({userId: session?.user.id ?? ''})]);
 
-  let userProduct: ProductWithPrices | undefined;
-  let userPrice: Price | undefined;
-
-  if (subscription) {
-    for (const product of products) {
-      for (const price of product.prices) {
-        if (price.id === subscription.price_id) {
-          userProduct = product;
-          userPrice = price;
-        }
-      }
-    }
-  }
 
   return (
-    <section className='rounded-lg bg-black px-4 py-16'>
-      <h1 className='mb-4 text-center'>Account</h1>
-
-      <div className='flex flex-col gap-4'>
-        <section className='mt-2 flex w-full flex-col items-center gap-8 rounded-lg bg-black p-10 px-4 text-center'>
-          <Image src='/profile-placeholder.png' width={100} height={100} alt='Profile Picture' className='rounded-full' />
-          <h1 className='text-2xl'>Welcome!</h1>
-          <p className='text-neutral-400'>Email: {session?.user?.email}</p>
-        </section>
-        {/* <Card
-          title='Your Plan'
-          footer={
-            subscription ? (
-              <Button size='sm' variant='secondary' asChild>
-                <Link href='/manage-subscription'>Manage your subscription</Link>
-              </Button>
-            ) : (
-              <Button size='sm' variant='secondary' asChild>
-                <Link href='/pricing'>Start a subscription</Link>
-              </Button>
-            )
-          }
-        >
-          {userProduct && userPrice ? (
-            <PricingCard product={userProduct} price={userPrice} />
-          ) : (
-            <p>You don&apos;t have an active subscription</p>
-          )}
-        </Card> */}
+    <section className='relative rounded-lg bg-black px-4 py-16'>
+      <div className='relative z-10'>
+        <h1 className='text-center text-white'>Account</h1>
+        <div className='flex flex-col gap-4 items-center'>
+          <section className='flex w-full flex-col items-center gap-8 rounded-lg p-10 px-4 text-center'>
+            <p className='text-neutral-300 font-bold text-medium flex gap-3 items center'><FaUser className='text-xl'/>Email: {session?.user?.email}</p>
+          </section>
+          <section className='rounded-lg bg-zinc-900 p-6 w-[50%] flex flex-col gap-2 items-center'>
+            <h3 className='text-xl font-semibold mb-2'>Balance</h3>
+            {[total, basic, hobby, pro].map((b, index) => <p key={index} className={cn('w-full flex justify-between items-center text-2xl font-bold', b > 0 ? 'text-green-400' : 'text-red-400')}><span className='text-neutral-500 text-xl font-normal'>Total credits</span>{b}</p> )}
+            <h3 className='text-xl font-semibold mb-2 text-center'>Need more credits?</h3>
+            <Button asChild variant='sexy'>
+              <Link href='/pricing'>Buy new credits</Link>
+            </Button>
+          </section>
+        </div>
       </div>
+      
+      <Image
+        src='/section-bg.png'
+        width={1440}
+        height={462}
+        alt=''
+        className='absolute left-0 top-0 rounded-t-lg'
+        quality={100}
+      />
     </section>
-  );
-}
-
-function Card({
-  title,
-  footer,
-  children,
-}: PropsWithChildren<{
-  title: string;
-  footer?: ReactNode;
-}>) {
-  return (
-    <div className='m-auto w-full max-w-3xl rounded-md bg-zinc-900'>
-      <div className='p-4'>
-        <h2 className='mb-1 text-xl font-semibold'>{title}</h2>
-        <div className='py-4'>{children}</div>
-      </div>
-      <div className='flex justify-end rounded-b-md border-t border-zinc-800 p-4'>{footer}</div>
-    </div>
   );
 }

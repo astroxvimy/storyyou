@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { GrLogout } from "react-icons/gr";
 import { FaBookOpen } from "react-icons/fa6";
-import { HiUserGroup } from "react-icons/hi2";
 
 // import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { getSession } from '@/features/account/controllers/get-session';
 
 import { signOut } from './(auth)/auth-actions';
 import { getCustomerBalance } from '@/features/account/controllers/get-balance';
+import { HiUserGroup } from 'react-icons/hi2';
 
 export async function Navigation() {
   const session = await getSession();
@@ -20,7 +20,11 @@ export async function Navigation() {
     <div className='relative flex items-center gap-6'>
       {session ? (
         <>
-          <Button className='text-xl hover:scale-[1.05]'><HiUserGroup/></Button>
+          <Button className='text-xl hover:scale-[1.05]'>
+            <Link href='/account'>
+              <HiUserGroup />
+            </Link>
+          </Button>
           <BookWithBadge balance={totalBalnce ?? 0}></BookWithBadge>
           <Button className='text-xl hover:scale-[1.05]' onClick={signOut}><GrLogout /></Button>
         </>
