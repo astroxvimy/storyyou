@@ -1,9 +1,10 @@
 import Image from 'next/image';
-import { FaUser } from "react-icons/fa";
-import { getSession } from '@/features/account/controllers/get-session';
-import { getCustomerBalance, getCustomerBasicBalance, getCustomerHobbyBalance, getCustomerProBalance } from '@/features/account/controllers/get-balance';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { FaUser } from "react-icons/fa";
+
+import { Button } from '@/components/ui/button';
+import { getCustomerBalance, getCustomerBasicBalance, getCustomerHobbyBalance, getCustomerProBalance } from '@/features/account/controllers/get-balance';
+import { getSession } from '@/features/account/controllers/get-session';
 import { cn } from '@/utils/cn';
 
 export default async function AccountPage() {

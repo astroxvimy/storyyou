@@ -1,10 +1,11 @@
 "use client"
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
+
 import { StoryWithPages } from "@/features/story/controllers/get-story";
 import { storyService } from "@/libs/api_service";
 import { Database } from "@/libs/supabase/types";
-import Image from "next/image";
-import { useEffect, useState } from "react";
 
 const GALEERY_SLIDER_LENGTH = 10;
 

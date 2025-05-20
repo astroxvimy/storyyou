@@ -1,16 +1,15 @@
 import Link from 'next/link';
-
-import { GrLogout } from "react-icons/gr";
 import { FaBookOpen } from "react-icons/fa6";
+import { GrLogout } from "react-icons/gr";
+import { HiUserGroup } from 'react-icons/hi2';
 
 // import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { getCustomerBalance } from '@/features/account/controllers/get-balance';
 // import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { getSession } from '@/features/account/controllers/get-session';
 
 import { signOut } from './(auth)/auth-actions';
-import { getCustomerBalance } from '@/features/account/controllers/get-balance';
-import { HiUserGroup } from 'react-icons/hi2';
 
 export async function Navigation() {
   const session = await getSession();

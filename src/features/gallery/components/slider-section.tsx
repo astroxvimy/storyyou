@@ -1,6 +1,7 @@
-import { Database } from "@/libs/supabase/types";
-import { StorySlider } from "./story-slider";
 import { getPublicStory } from "@/features/story/controllers/get-public-story";
+import { Database } from "@/libs/supabase/types";
+
+import { StorySlider } from "./story-slider";
 
 type Story = Database ['public']['Tables']['stories']['Row'];
 
