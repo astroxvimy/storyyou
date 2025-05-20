@@ -1,23 +1,35 @@
 import Link from 'next/link';
-import { IoMenu } from 'react-icons/io5';
+import { FaBookOpen } from "react-icons/fa6";
+import { GrLogout } from "react-icons/gr";
+import { HiUserGroup } from 'react-icons/hi2';
 
-import { AccountMenu } from '@/components/account-menu';
-import { Logo } from '@/components/logo';
+// import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
+import { getCustomerBalance } from '@/features/account/controllers/get-balance';
+// import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { getSession } from '@/features/account/controllers/get-session';
 
 import { signOut } from './(auth)/auth-actions';
 
 export async function Navigation() {
   const session = await getSession();
+  const totalBalnce = session && await getCustomerBalance({userId: session?.user.id});
 
   return (
     <div className='relative flex items-center gap-6'>
       {session ? (
-        <AccountMenu signOut={signOut} />
+        <>
+          <Button className='text-xl hover:scale-[1.05]'>
+            <Link href='/account'>
+              <HiUserGroup />
+            </Link>
+          </Button>
+          <BookWithBadge balance={totalBalnce ?? 0}></BookWithBadge>
+          <Button className='text-xl hover:scale-[1.05]' onClick={signOut}><GrLogout /></Button>
+        </>
       ) : (
         <>
+
           <Button variant='sexy' className='hidden flex-shrink-0 lg:flex' asChild>
             <Link href='/login'>login</Link>
           </Button>
@@ -40,4 +52,15 @@ export async function Navigation() {
       )}
     </div>
   );
+}
+
+function BookWithBadge({balance, onBalanceClick}: {balance: number, onBalanceClick?: () => {}}) {
+  return (
+    <div className="relative inline-block">
+      <Button className='text-xl hover:scale-[1.05]' onClick={onBalanceClick}><FaBookOpen /></Button>
+      <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+        {balance}
+      </span>
+    </div>
+  )
 }

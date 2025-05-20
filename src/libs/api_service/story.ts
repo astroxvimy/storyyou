@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { AnyZodObject } from 'zod';
 
+import { StoryWithPages } from '@/features/story/controllers/get-story';
+
 const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 const instance: AxiosInstance = axios.create({

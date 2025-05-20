@@ -157,6 +157,7 @@ export type Database = {
           created_at: string | null
           hobbies: string[] | null
           id: string
+          is_public: boolean | null
           story_detail: string | null
           story_name: string | null
           story_pdf: string | null
@@ -169,6 +170,7 @@ export type Database = {
           created_at?: string | null
           hobbies?: string[] | null
           id?: string
+          is_public?: boolean | null
           story_detail?: string | null
           story_name?: string | null
           story_pdf?: string | null
@@ -181,6 +183,7 @@ export type Database = {
           created_at?: string | null
           hobbies?: string[] | null
           id?: string
+          is_public?: boolean | null
           story_detail?: string | null
           story_name?: string | null
           story_pdf?: string | null
@@ -331,7 +334,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_customer_balance: {
+        Args: { column_name: string; increment_by: number; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       pricing_plan_interval: "day" | "week" | "month" | "year"

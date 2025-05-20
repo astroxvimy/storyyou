@@ -3,22 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import { StoryWithPages } from '@/features/story/controllers/get-story';
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
 import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { Font } from '@react-pdf/renderer';
 
-type Story = Database['public']['Tables']['stories']['Insert'];
-
-interface StoryPage {
+export interface StoryPage {
   id: string;
   page_number: number;
   page_text: string;
   page_image?: string;
-}
-
-interface StoryWithPages extends Story {
-  story_pages: StoryPage[];
 }
 
 const BACKGROUND_IMAGE_URL = '/background.jpeg'; // Update this path as needed
@@ -128,7 +123,7 @@ const StoryPDF = ({ story }: { story: StoryWithPages }) => (
       index === 0 ? (
         <Page key={index} style={styles.page}>
           <View style={styles.pageBackgroundContainer}>
-            <Image src={page.page_image} style={styles.imageBackground} />
+            <Image src={page.page_image ?? ''} style={styles.imageBackground} />
           </View>
           <View style={styles.pageBackgroundContainer}>
             <Image src={BAND_IMAGE_URL} style={styles.band} />
