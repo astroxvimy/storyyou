@@ -27,7 +27,7 @@ export function StorySlider({ storyWithPage }: { storyWithPage: StoryWithPages |
     displayedPages = Array(times).fill(pages).flat().slice(0, GALEERY_SLIDER_LENGTH);
   }
   return (
-    <Link href={`/story/${storyWithPage?.id}/view`}>
+    <Link href={`/gallery/${storyWithPage?.id}/view`}>
         <div className='relative hover:scale-[1.02] hover:rotate-y-6 transform-gpu cursor-pointer transition-all duration-300'>
         <div className='absolute -left-4 top-0 h-full w-4 rounded-l-[8px] bg-black/30' />
         <StoryBookCase
