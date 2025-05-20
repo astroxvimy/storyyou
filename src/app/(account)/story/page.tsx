@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,6 @@ import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
 import { storyService } from '@/libs/api_service';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const steps = [
   { id: 'upload', title: 'Upload Photo', description: 'Upload a photo to personalize the story.' },
@@ -235,9 +235,9 @@ export default function StoryPage() {
     <div className='container flex w-full flex-col gap-8 py-8 lg:flex-row'>
       <Card className='min-h-full flex-1 rounded-lg bg-gradient-to-r from-purple-700  to-blue-600'>
         <div className='relative min-h-full px-12 py-16 shadow-lg'>
-          <img src='/balloon.png' className='absolute bottom-8 right-0 h-48 w-48 opacity-50'></img>
+          <img src='/balloon.png' alt='balloon' className='absolute bottom-8 right-0 h-48 w-48 opacity-50'></img>
           <CardTitle className='relative mb-8 text-2xl font-bold text-white'>Your Story Summary</CardTitle>
-          <img src={userPhotoPreview} alt='Preview' className='mb-8 h-32 w-32 rounded-lg  object-cover' />
+          <img src={userPhotoPreview ?? ''} alt='Preview' className='mb-8 h-32 w-32 rounded-lg  object-cover' />
           <div className='relative flex flex-col'>
             <ul className='mt-4 space-y-2 text-sm text-gray-200'>
               <li className='flex gap-1'>
