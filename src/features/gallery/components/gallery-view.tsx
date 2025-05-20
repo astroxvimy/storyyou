@@ -1,7 +1,8 @@
 'use client';
 
-import { StoryWithPages } from '@/features/story/controllers/get-story';
 import React, { useEffect } from 'react';
+
+import { StoryWithPages } from '@/features/story/controllers/get-story';
 
 export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages | null }) => {
   useEffect(() => {

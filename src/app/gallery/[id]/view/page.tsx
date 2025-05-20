@@ -5,7 +5,7 @@ export default async function GalleryView({ params }: { params: { id: string } }
     const routeId = params?.id;
 
     if (!routeId) {
-        return <div>Can't find the story</div>;
+        return <div>Can&lsquo;t find the story</div>;
     }
 
     const storyWithPage = await getPublicStory(routeId);

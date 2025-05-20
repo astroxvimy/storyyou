@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 import { StoryWithPages } from '@/features/story/controllers/get-story';
 import { Database } from '@/libs/supabase/types';
+
 import { StoryBookCase } from './story-book-case';
-import Link from 'next/link';
 
 const GALEERY_SLIDER_LENGTH = 10;
 
