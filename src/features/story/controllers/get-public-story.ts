@@ -7,19 +7,13 @@ export type StoryWithPages = Database['public']['Tables']['stories']['Row'] & {
   story_pages: Database['public']['Tables']['story_pages']['Row'][];
 };
 
-export async function getStory(storyId: string): Promise<StoryWithPages | null> {
+export async function getPublicStory(storyId: string): Promise<StoryWithPages | null> {
   const supabase = await createSupabaseServerClient();
-  const user = await getUser();
-
-  if (!user) {
-    throw new Error('User not found');
-  }
 
   const { data, error } = await supabase
     .from('stories')
     .select('*, story_pages(*)')
     .eq('id', storyId)
-    .eq('user_id', user.id)
     .order('page_number', { ascending: true, foreignTable: 'story_pages' })
     .single(); // Returns a single object instead of an array
 

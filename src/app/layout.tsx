@@ -71,18 +71,9 @@ async function AppBar() {
 function HeaderMenu() {
   return (
     <div className='flex gap-4'>
-      <Link href='create' className='font-bold hover:text-green-400'>
-        Create
-      </Link>
-      <Link href='gallery' className='font-bold hover:text-green-400'>
-        Gallery
-      </Link>
-      <Link href='pricing' className='font-bold hover:text-green-400'>
-        Pricing
-      </Link>
-      <Link href='books' className='font-bold hover:text-green-400'>
-        Your books
-      </Link>
+      <Link href='create' className='hover:text-green-400 font-bold'>Create</Link>
+      <Link href='gallery' className='hover:text-green-400 font-bold'>Gallery</Link>
+      <Link href='pricing' className='hover:text-green-400 font-bold'>Pricing</Link>
     </div>
   );
 }

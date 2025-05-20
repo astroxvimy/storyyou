@@ -1,3 +1,4 @@
+import { StoryWithPages } from '@/features/story/controllers/get-story';
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { AnyZodObject } from 'zod';
 
