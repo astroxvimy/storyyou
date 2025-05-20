@@ -34,6 +34,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en'>
+      <head>
+        {/* Favicon */}
+        <link rel='icon' href='/favicon/favicon.ico' />
+        <link rel='apple-touch-icon' sizes='180x180' href='/favicon/apple-touch-icon.png' />
+        <link rel='icon' type='image/png' sizes='32x32' href='/favicon/favicon-32x32.png' />
+        <link rel='icon' type='image/png' sizes='16x16' href='/favicon/favicon-16x16.png' />
+        <link rel='manifest' href='/favicon/site.webmanifest' />
+        <title>Storyou</title>
+      </head>
       <body className={cn('font-sans antialiased', montserrat.variable, montserratAlternates.variable)}>
         <div className='m-auto flex h-full max-w-[1440px] flex-col px-4'>
           <AppBar />
@@ -62,12 +71,20 @@ async function AppBar() {
 function HeaderMenu() {
   return (
     <div className='flex gap-4'>
-      <Link href='create' className='hover:text-green-400 font-bold'>Create</Link>
-      <Link href='gallery' className='hover:text-green-400 font-bold'>Gallery</Link>
-      <Link href='pricing' className='hover:text-green-400 font-bold'>Pricing</Link>
-      <Link href='books' className='hover:text-green-400 font-bold'>Your books</Link>
+      <Link href='create' className='font-bold hover:text-green-400'>
+        Create
+      </Link>
+      <Link href='gallery' className='font-bold hover:text-green-400'>
+        Gallery
+      </Link>
+      <Link href='pricing' className='font-bold hover:text-green-400'>
+        Pricing
+      </Link>
+      <Link href='books' className='font-bold hover:text-green-400'>
+        Your books
+      </Link>
     </div>
-  )
+  );
 }
 
 function Footer() {
@@ -112,9 +129,7 @@ function Footer() {
         </div>
       </div>
       <div className='border-t border-zinc-800 py-6 text-center'>
-        <span className='text-neutral4 text-xs'>
-          Copyright {new Date().getFullYear()} © Storyou
-        </span>
+        <span className='text-neutral4 text-xs'>Copyright {new Date().getFullYear()} © Storyou</span>
       </div>
     </footer>
   );

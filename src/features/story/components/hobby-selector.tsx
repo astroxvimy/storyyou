@@ -8,10 +8,26 @@ import { useToast } from '@/components/ui/use-toast';
 import { Cross1Icon } from '@radix-ui/react-icons';
 
 const commonHobbies = [
-  'Soccer', 'Basketball', 'Drawing', 'Painting', 'Dancing',
-  'Singing', 'Reading', 'Swimming', 'Cycling', 'Chess',
-  'Piano', 'Guitar', 'Cooking', 'Gardening', 'Photography',
-  'Robotics', 'Coding', 'Hiking', 'Yoga', 'Martial Arts'
+  'Soccer',
+  'Basketball',
+  'Drawing',
+  'Painting',
+  'Dancing',
+  'Singing',
+  'Reading',
+  'Swimming',
+  'Cycling',
+  'Chess',
+  'Piano',
+  'Guitar',
+  'Cooking',
+  'Gardening',
+  'Photography',
+  'Robotics',
+  'Coding',
+  'Hiking',
+  'Yoga',
+  'Martial Arts',
 ];
 
 interface HobbySelectorProps {
@@ -37,7 +53,7 @@ export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps)
   };
 
   const removeHobby = (hobby: string) => {
-    onChange(selectedHobbies.filter(h => h !== hobby));
+    onChange(selectedHobbies.filter((h) => h !== hobby));
   };
 
   const handleCustomHobbySubmit = (e: React.FormEvent) => {
@@ -49,28 +65,26 @@ export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps)
   };
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Selected Hobbies */}
-      <div className="flex flex-wrap gap-2">
-        {selectedHobbies.map(hobby => (
-          <Badge key={hobby} variant="secondary" className="flex items-center gap-1">
+      <div className='flex flex-wrap gap-2'>
+        {selectedHobbies.map((hobby) => (
+          <Badge key={hobby} variant='secondary' className='flex items-center gap-1'>
             {hobby}
-            <button
-              onClick={() => removeHobby(hobby)}
-              className="ml-1 hover:text-destructive"
-            >
-              <Cross1Icon className="h-3 w-3" />
+            <button onClick={() => removeHobby(hobby)} className='ml-1 transition-colors hover:text-destructive'>
+              <Cross1Icon className='h-3 w-3' />
             </button>
           </Badge>
         ))}
       </div>
 
       {/* Common Hobbies */}
-      <div className="flex flex-wrap gap-2">
-        {commonHobbies.map(hobby => (
+      <div className='flex flex-wrap gap-2'>
+        {commonHobbies.map((hobby) => (
           <Button
             key={hobby}
-            size="sm"
+            size='sm'
+            className='border-1 border-white bg-opacity-60'
             onClick={() => addHobby(hobby)}
             disabled={selectedHobbies.includes(hobby)}
           >
@@ -80,18 +94,18 @@ export function HobbySelector({ selectedHobbies, onChange }: HobbySelectorProps)
       </div>
 
       {/* Custom Hobby Input */}
-      <form onSubmit={handleCustomHobbySubmit} className="flex gap-2">
+      <form onSubmit={handleCustomHobbySubmit} className='flex gap-2'>
         <input
-          type="text"
+          type='text'
           value={customHobby}
           onChange={(e) => setCustomHobby(e.target.value)}
-          placeholder="Add a custom hobby..."
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-white"
+          placeholder='Add a custom hobby...'
+          className='flex-1 rounded-md border border-input bg-gray-700 bg-opacity-0 px-3 py-2 text-sm text-white'
         />
-        <Button type="submit" size="sm">
+        <Button type='submit' className='bg-opacity-60 ' size='sm'>
           Add
         </Button>
       </form>
     </div>
   );
-} 
+}
