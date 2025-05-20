@@ -1,13 +1,8 @@
 import { FlipBookView } from '@/features/gallery/components/gallery-view';
 import { getPublicStory } from '@/features/story/controllers/get-public-story';
 
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
-
-export default async function GalleryView({ params }: PageProps) {
+//@ts-ignore
+export default async function GalleryView({ params }: {  params: { id: string };  }) {
   const routeId = params?.id;
 
   if (!routeId) {
