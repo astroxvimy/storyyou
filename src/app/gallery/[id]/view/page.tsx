@@ -1,14 +1,20 @@
-import { FlipBookView } from "@/features/gallery/components/gallery-view";
-import { getPublicStory } from "@/features/story/controllers/get-public-story";
+import { FlipBookView } from '@/features/gallery/components/gallery-view';
+import { getPublicStory } from '@/features/story/controllers/get-public-story';
 
-export default async function GalleryView({ params }: { params: { id: string } }) {
-    const routeId = params?.id;
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
 
-    if (!routeId) {
-        return <div>Can&lsquo;t find the story</div>;
-    }
+export default async function GalleryView({ params }: PageProps) {
+  const routeId = params?.id;
 
-    const storyWithPage = await getPublicStory(routeId);
+  if (!routeId) {
+    return <div>Can&lsquo;t find the story</div>;
+  }
 
-    return <FlipBookView storyWithPage={storyWithPage} />;
+  const storyWithPage = await getPublicStory(routeId);
+
+  return <FlipBookView storyWithPage={storyWithPage} />;
 }
