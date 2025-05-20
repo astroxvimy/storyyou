@@ -203,7 +203,7 @@ export default function StoryPage() {
                 <p className='text-muted-foreground'>
                   <strong>Story Description:</strong> {formData.description || 'Not set'}
                 </p>
-                <img src={userPhotoPreview} alt='Preview' className='h-32 w-32 rounded-lg object-cover' />
+                <img src={userPhotoPreview ?? ''} alt='Preview' className='h-32 w-32 rounded-lg object-cover' />
                 <p className='text-muted-foreground'>
                   <strong>Hobbies:</strong>{' '}
                   {formData.hobbies.length > 0 ? formData.hobbies.join(', ') : 'None selected'}
