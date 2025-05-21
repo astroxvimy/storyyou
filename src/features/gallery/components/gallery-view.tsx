@@ -52,8 +52,7 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
                     </div>
                   </React.Fragment>
                 );
-              else
-                return (
+              else  return (
                   <React.Fragment key={page.id + storyWithPage.id + index}>
                     <div className='page overflow-hidden text-black'>
                       <img
@@ -65,9 +64,16 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
                     <div className='page overflow-hidden text-black flex justify-center items-center'>
                       <p className='text-[6px] sm:text-sm md:text-md lg:text-lg px-8'>{page.page_text}</p>
                     </div>
-                    </React.Fragment>
+                  </React.Fragment>
                 );
             })}
+            <div className='page overflow-hidden text-black'>
+              <img
+                src={storyWithPage?.story_pages[0]?.page_image ?? ''}
+                alt={`${storyWithPage?.story_name}-image-last`}
+                className='h-full w-full object-cover'
+              />
+            </div>
           </div>
         </div>
       </div>
