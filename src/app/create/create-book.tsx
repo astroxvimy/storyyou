@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -15,7 +16,6 @@ import { HobbySelector } from '@/features/story/components/hobby-selector';
 import { ImageUpload } from '@/features/story/components/image-upload';
 import { StoryPreview } from '@/features/story/components/story-preview';
 import { balanceService, storyService } from '@/libs/api_service';
-import Link from 'next/link';
 
 const steps = [
   { id: 'upload', title: 'Upload Photo', description: 'Upload a photo to personalize the story.' },

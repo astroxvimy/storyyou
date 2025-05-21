@@ -1,5 +1,6 @@
-import { CreateBook } from "./create-book";
 import { getUser } from "@/features/account/controllers/get-user";
+
+import { CreateBook } from "./create-book";
 
 export default async function CreatePage() {
     const user = await getUser();
