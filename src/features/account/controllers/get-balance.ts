@@ -12,7 +12,7 @@ export async function getCustomerBalance({ userId }: { userId: string }) {
     return totalBalnce  ?? 0;
 
   } catch (error) {
-    throw new Error('Error fetching customer balance');
+    throw new Error('Error getting total balance');
   }
 }
 
@@ -24,7 +24,7 @@ export async function getCustomerBasicBalance({ userId }: { userId: string }) {
     .single();
 
     if (error) {
-      throw new Error('Error fetching customer basic balance');
+      throw new Error(error.message);
     }
 
   return data.basic_balance ?? 0;
@@ -38,7 +38,7 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
     .single();
 
   if (error) {
-    throw new Error('Error fetching customer pro balance');
+    throw new Error(error.message);
   }
 
   return data.pro_balance ?? 0;
@@ -52,7 +52,7 @@ export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
     .single();
 
   if (error) {
-    throw new Error('Error fetching customer hobby balance');
+    throw new Error(error.message);
   }
 
   return data.hobby_balance ?? 0;
