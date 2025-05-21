@@ -18,13 +18,13 @@ export async function Navigation() {
 
   const userId = user?.id;
 
-  if (userId && session) {
-    [basic, hobby, pro] = await Promise.all([
-      getCustomerBasicBalance({ userId }),
-      getCustomerHobbyBalance({ userId }),
-      getCustomerProBalance({ userId }),
-    ]);
-  }
+  // if (userId && session) {
+  //   [basic, hobby, pro] = await Promise.all([
+  //     getCustomerBasicBalance({ userId }),
+  //     getCustomerHobbyBalance({ userId }),
+  //     getCustomerProBalance({ userId }),
+  //   ]);
+  // }
 
   return (
     <div className='relative flex items-center gap-6'>
