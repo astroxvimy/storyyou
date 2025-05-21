@@ -4,7 +4,6 @@ import { FaUser } from 'react-icons/fa';
 
 import { Button } from '@/components/ui/button';
 import {
-  getCustomerBalance,
   getCustomerBasicBalance,
   getCustomerHobbyBalance,
   getCustomerProBalance,
@@ -14,12 +13,20 @@ import { cn } from '@/utils/cn';
 
 export default async function AccountPage() {
   const session = await getSession();
-  const [total, basic, hobby, pro] = await Promise.all([
-    getCustomerBalance({ userId: session?.user.id ?? '' }),
-    getCustomerBasicBalance({ userId: session?.user.id ?? '' }),
-    getCustomerHobbyBalance({ userId: session?.user.id ?? '' }),
-    getCustomerProBalance({ userId: session?.user.id ?? '' }),
-  ]);
+
+  let [basic, hobby, pro]: [number, number, number] = [0, 0, 0];
+
+  const userId = session?.user?.id;
+
+  if (userId && userId.trim() !== '') {
+    [basic, hobby, pro] = await Promise.all([
+      getCustomerBasicBalance({ userId }),
+      getCustomerHobbyBalance({ userId }),
+      getCustomerProBalance({ userId }),
+    ]);
+  } else {
+    throw new Error('Invalid or missing userId in session');
+  }
 
   return (
     <section className='relative rounded-lg bg-black px-4 py-16'>
@@ -35,7 +42,7 @@ export default async function AccountPage() {
           <section className='flex w-[50%] flex-col items-center gap-2 rounded-lg bg-zinc-900 p-6'>
             <h3 className='mb-2 text-xl font-semibold'>Balance</h3>
             {[
-              { label: 'Total credits', value: total },
+              { label: 'Total credits', value: basic + hobby + pro },
               { label: 'Basic credits', value: basic },
               { label: 'Hobby credits', value: hobby },
               { label: 'Pro credits', value: pro },

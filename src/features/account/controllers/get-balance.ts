@@ -3,16 +3,15 @@ import { getEnvVar } from '@/utils/get-env-var';
 
 export async function getCustomerBalance({ userId }: { userId: string }) {
   try {
-    const basicBalance = getCustomerBasicBalance({userId});
-    const proBalance = getCustomerProBalance({userId});
-    const hobbyBalance = getCustomerHobbyBalance({userId});
-    const balances = await  Promise.all([basicBalance, proBalance, hobbyBalance]);
+    const basicBalance = await getCustomerBasicBalance({userId});
+    const proBalance = await getCustomerProBalance({userId});
+    const hobbyBalance = await getCustomerHobbyBalance({userId});
 
-    const totalBalnce = balances.filter(b => b != null).reduce((s, v) => (s ?? 0) + (v ?? 0), 0);
-    return totalBalnce  ?? 0;
+    const total = basicBalance + proBalance + hobbyBalance;
+    return total;
 
   } catch (error) {
-    throw new Error('Error fetching customer balance');
+    throw new Error('Error getting total balance');
   }
 }
 
@@ -24,7 +23,7 @@ export async function getCustomerBasicBalance({ userId }: { userId: string }) {
     .single();
 
     if (error) {
-      throw new Error('Error fetching customer basic balance');
+      throw new Error(error.message);
     }
 
   return data.basic_balance ?? 0;
@@ -38,7 +37,7 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
     .single();
 
   if (error) {
-    throw new Error('Error fetching customer pro balance');
+    throw new Error(error.message);
   }
 
   return data.pro_balance ?? 0;
@@ -52,7 +51,7 @@ export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
     .single();
 
   if (error) {
-    throw new Error('Error fetching customer hobby balance');
+    throw new Error(error.message);
   }
 
   return data.hobby_balance ?? 0;
