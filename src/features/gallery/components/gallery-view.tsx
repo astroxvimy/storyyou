@@ -31,51 +31,46 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
     });
   }, []);
 
-  //   const renderPages = () => {
-  //     const texts: Record<number, string> = {
-  //       0: 'Open Me, <br>please!',
-  //       2: 'Hello there!',
-  //     };
-
-  //     return Array.from({ length: 34 }, (_, i) => (
-  //       <div
-  //         key={i}
-  //         className="page"
-  //         dangerouslySetInnerHTML={{ __html: texts[i] || '' }}
-  //       />
-  //     ));
-  //   };
-
   return (
-    <div className='book'>
-      <div id='pages' className='pages'>
-        {storyWithPage?.story_pages.map((page, index) => {
-          if (index === 0)
-            return (
-              <div key={page.id + storyWithPage.id + index} className='page overflow-hidden text-black'>
-                <img
-                  src={page.page_image ?? ''}
-                  alt={`${storyWithPage.story_name}-image-${index}`}
-                  className='h-full w-full object-cover'
-                />
-              </div>
-            );
-          else
-            return (
-              <>
-                <div key={page.id + storyWithPage.id + index + 'image'} className='page overflow-hidden text-black'>
-                  <img
-                    src={page.page_image ?? ''}
-                    alt={`${storyWithPage.story_name}-image-${index}`}
-                    className='h-full w-full object-cover'
-                  />
-                </div>
-                <div key={page.id + storyWithPage.id + index + 'text'} className='page overflow-hidden text-black'>
-                  <p className='text-md'>{page.page_text}</p>
-                </div>
-              </>
-            );
-        })}
+    <div>
+      <div className='my-6 mb-8'>
+        <h1 className='text-center capitalize'>{(storyWithPage?.story_name || storyWithPage?.story_name ==='') ? storyWithPage?.story_name : 'A book powered by Storyou'}</h1>
+      </div>
+      <div className='flex justify-center'>
+        <div className='book'>
+          <div id='pages' className='pages'>
+            {storyWithPage?.story_pages.map((page, index) => {
+              if (index === 0)
+                return (
+                  <div key={page.id + storyWithPage.id + index} className='page overflow-hidden text-black'>
+                    <img
+                      src={page.page_image ?? ''}
+                      alt={`${storyWithPage.story_name}-image-${index}`}
+                      className='h-full w-full object-cover'
+                    />
+                  </div>
+                );
+              else
+                return (
+                  <React.Fragment key={page.id + storyWithPage.id + index}>
+                    <div className='page overflow-hidden text-black'>
+                      <img
+                        src={page.page_image ?? ''}
+                        alt={`${storyWithPage.story_name}-image-${index}`}
+                        className='h-full w-full object-cover'
+                      />
+                    </div>
+                    <div className='page overflow-hidden text-black flex justify-center items-center'>
+                      <p className='text-[6px] sm:text-sm md:text-md lg:text-lg px-8'>{page.page_text}</p>
+                    </div>
+                  </React.Fragment>
+                );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className='mt-4'>
+        <h1 className='text-center text-neutral-700 text-lg capitalize'>{'Powered by Storyou'}</h1>
       </div>
     </div>
   );

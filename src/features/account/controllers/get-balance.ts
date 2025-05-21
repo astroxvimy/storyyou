@@ -1,4 +1,5 @@
 import { supabaseAdminClient } from '@/libs/supabase/supabase-admin';
+import { getEnvVar } from '@/utils/get-env-var';
 
 export async function getCustomerBalance({ userId }: { userId: string }) {
   try {
@@ -42,7 +43,6 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
 
   return data.pro_balance ?? 0;
 }
-
 
 export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
   const { data, error } = await supabaseAdminClient

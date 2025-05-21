@@ -13,7 +13,7 @@ import { signOut } from './(auth)/auth-actions';
 
 export async function Navigation() {
   const session = await getSession();
-  const totalBalnce = session && await getCustomerBalance({userId: session?.user.id});
+  const totalBalnce = await getCustomerBalance({userId: session?.user.id ?? ''});
 
   return (
     <div className='relative flex items-center gap-6'>

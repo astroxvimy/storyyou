@@ -1,3 +1,4 @@
-import storyService from './story';
+import balanceService  from './balance';
+import storyService  from './story';
 
-export { storyService };
+export { balanceService,storyService };
