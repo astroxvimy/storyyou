@@ -26,7 +26,7 @@ export async function Navigation() {
               <HiUserGroup />
             </Link>
           </Button>
-          <BookWithBadge balance={(basic + pro + hobby) ?? 0}></BookWithBadge>
+          <BookWithBadge balance={basic && pro && hobby ? basic + pro + hobby : 0}></BookWithBadge>
           <Button className='text-xl hover:scale-[1.05]' onClick={signOut}><GrLogout /></Button>
         </>
       ) : (
