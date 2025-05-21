@@ -11,3 +11,16 @@ export async function getSession() {
 
   return data.session;
 }
+
+
+export async function getSessionUser() {
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error(error);
+  }
+
+  return data.user;
+}

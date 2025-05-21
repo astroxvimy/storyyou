@@ -1,11 +1,11 @@
 import { PropsWithChildren } from 'react';
 import { redirect } from 'next/navigation';
 
-import { getSession } from '@/features/account/controllers/get-session';
+import { getSessionUser } from '@/features/account/controllers/get-session';
 
 export default async function AccountLayout({ children }: PropsWithChildren) {
-  const session = await getSession();
-  if (!session) {
+  const user = await getSessionUser();
+  if (!user) {
     redirect('/login');
   }
   return children;

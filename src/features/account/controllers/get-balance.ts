@@ -26,7 +26,7 @@ export async function getCustomerBasicBalance({ userId }: { userId: string }) {
       throw new Error(error.message);
     }
 
-  return data.basic_balance ?? 0;
+  return data?.basic_balance ?? 0;
 }
 
 export async function getCustomerProBalance({ userId }: { userId: string }) {
@@ -40,7 +40,7 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
     throw new Error(error.message);
   }
 
-  return data.pro_balance ?? 0;
+  return data?.pro_balance ?? 0;
 }
 
 export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
@@ -54,5 +54,5 @@ export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
     throw new Error(error.message);
   }
 
-  return data.hobby_balance ?? 0;
+  return data?.hobby_balance ?? 0;
 }
