@@ -6,18 +6,19 @@ import { HiUserGroup } from 'react-icons/hi2';
 // import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { getCustomerBasicBalance, getCustomerHobbyBalance, getCustomerProBalance } from '@/features/account/controllers/get-balance';
-import { getSessionUser } from '@/features/account/controllers/get-session';
+import { getSession, getSessionUser } from '@/features/account/controllers/get-session';
 
 // import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { signOut } from './(auth)/auth-actions';
 
 export async function Navigation() {
+  const session = await getSession();
   const user = await getSessionUser();
   let [basic, hobby, pro]: [number, number, number] = [0, 0, 0];
 
   const userId = user?.id;
 
-  if (userId) {
+  if (userId && session) {
     [basic, hobby, pro] = await Promise.all([
       getCustomerBasicBalance({ userId }),
       getCustomerHobbyBalance({ userId }),
@@ -27,7 +28,7 @@ export async function Navigation() {
 
   return (
     <div className='relative flex items-center gap-6'>
-      {user ? (
+      {session ? (
         <>
           <Button className='text-xl hover:scale-[1.05]'>
             <Link href='/account'>
