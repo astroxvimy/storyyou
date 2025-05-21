@@ -8,6 +8,7 @@ import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
 import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { Font } from '@react-pdf/renderer';
+import { FlipBookView } from '@/features/gallery/components/gallery-view';
 
 export interface StoryPage {
   id: string;
@@ -149,26 +150,35 @@ const StoryPDF = ({ story }: { story: StoryWithPages }) => (
 export default function StoryViewPage() {
   const params = useParams();
   const routeId = typeof params?.id === 'string' ? params.id : null;
-  // const [stories, setStories] = useState<Story[]>([]);
   const [currentStoryId, setCurrentStoryId] = useState<string | null>(routeId);
   console.log('🚗😀😀😀Current story ID:', currentStoryId);
   const [currentStory, setCurrentStory] = useState<StoryWithPages | null>(null);
   const [status, setStatus] = useState<'idle' | 'text_polling' | 'image_polling' | 'image_failed'>('idle');
   const [statusText, setStatusText] = useState('');
 
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"generation" | "view">("view");
+
   // Load stories on mount
   useEffect(() => {
-    // const fetchStories = async () => {
-    //   const storiesData = await storyService.getStories();
-    //   console.log('🚗Fetched stories:', storiesData.data);
-    //   setStories(storiesData.data.stories);
-    // };
-    // fetchStories();
-  }, []);
+    if (!currentStoryId) return;
+    setLoading(true);
+    const getStoryStatus = async () => {
+      const res = await storyService.getStoryStatus(currentStoryId);
+      setLoading(false);
+      if (res.data.status !== 'image_complete') setMode("generation");
+      const storyData = await storyService.getStory(currentStoryId);
+      console.log('❤️❤️❤️', storyData.data.story);
+      setCurrentStory(storyData.data.story);
+    };
+    getStoryStatus();
+    
+  }, [currentStoryId]);
 
   // poll for text status
   useEffect(() => {
     if (!currentStoryId) return;
+    if (mode === 'view') return;
 
     let interval: NodeJS.Timeout | null = null;
 
@@ -221,7 +231,7 @@ export default function StoryViewPage() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentStoryId, status]);
+  }, [currentStoryId, status, mode]);
 
   useEffect(() => {
     if (currentStoryId) {
@@ -230,65 +240,70 @@ export default function StoryViewPage() {
     }
   }, [currentStoryId]);
 
-  // Handle selecting the current story (top button)
-  // const handleSelectCurrent = async () => {
-  //   const res = await fetch('/api/story/current');
-  //   const { id } = await res.json();
-  //   setCurrentStoryId(id);
-  // };
+  if (loading) return (
+    <div>Loading your story...</div>
+  );
 
-  return (
+  else if (mode === "generation") return (
     <div className='mx-auto max-w-4xl p-4'>
-      <h1 className='mb-4 text-2xl font-bold'>Your Current Story</h1>
-
       {status !== 'idle' && <div>Your story is on generation, please wait for a while</div>}
       <div>{statusText}</div>
-
-      {/* <button onClick={handleSelectCurrent} className='mb-4 rounded bg-blue-500 px-4 py-2 text-white'>
-        View Current Story
-      </button> */}
-
-      {/* <div className='mb-6 flex gap-4'>
-        {stories.map((story) => (
-          <button
-            key={story.id}
-            onClick={() => setCurrentStoryId(story?.id || null)}
-            className={`rounded border px-3 py-1 ${story.id === currentStoryId ? 'bg-blue-100' : ''}`}
-          >
-            {story?.story_name || 'Untitled Story'}
-          </button>
-        ))}
-      </div> */}
 
       {currentStory && (
         <div>
           <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
           <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
-          {/* PDF Preview */}
-          {/* <div className='mb-6'>
-            <PDFViewer width='100%' height='1200'>
-              <StoryPDF story={currentStory} />
-            </PDFViewer>
-          </div> */}
-          <PDFDownloadLink
-            document={<StoryPDF story={currentStory} />}
-            fileName={`${currentStory.story_name || 'story'}.pdf`}
-            className='rounded rounded-full bg-purple-500 px-4 py-2 text-white hover:bg-purple-600'
-          >
-            Donwload PDF
-            <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' />
-          </PDFDownloadLink>
-          {/* {currentStory.story_pages.map((page) => (
-            <div key={page.id} className='mb-6'>
-              <h3 className='font-semibold'>Page {page.page_number}</h3>
-              <p>{page.page_text}</p>
-              {page.page_image && (
-                <img src={page.page_image} alt={`Page ${page.page_number}`} className='mt-2 w-full max-w-md' />
-              )}
-            </div>
-          ))} */}
-        </div>
-      )}
+        </div>)}
     </div>
   );
+  else if(currentStory) return (
+    <div>
+      <div className='flex justify-end'>
+        <PDFDownloadLink
+          document={<StoryPDF story={currentStory} />}
+          fileName={`${currentStory.story_name || 'story'}.pdf`}
+          className='rounded-lg bg-blue-400 px-4 py-2 text-white hover:bg-blue-600'
+        >
+          Print
+          {/* <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' /> */}
+        </PDFDownloadLink>
+      </div>
+      <FlipBookView storyWithPage={currentStory} />
+    </div>
+  );
+
+  else return (
+    <div>Can not find the story</div>
+  )
+
+  // return (
+  //   <div className='mx-auto max-w-4xl p-4'>
+  //     {status !== 'idle' && <div>Your story is on generation, please wait for a while</div>}
+  //     <div>{statusText}</div>
+
+  //     {currentStory && (
+  //       <div>
+  //         <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
+  //         <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
+
+  //         {/* PDF Preview */}
+  //         {/* <div className='mb-6'>
+  //           <PDFViewer width='100%' height='1200'>
+  //             <StoryPDF story={currentStory} />
+  //           </PDFViewer>
+  //         </div> */}
+
+  //         <PDFDownloadLink
+  //           document={<StoryPDF story={currentStory} />}
+  //           fileName={`${currentStory.story_name || 'story'}.pdf`}
+  //           className='rounded rounded-full bg-purple-500 px-4 py-2 text-white hover:bg-purple-600'
+  //         >
+  //           Donwload PDF
+  //           <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' />
+  //         </PDFDownloadLink>
+
+  //       </div>
+  //     )}
+  //   </div>
+  // );
 }

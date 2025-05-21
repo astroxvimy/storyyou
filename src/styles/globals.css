@@ -194,7 +194,7 @@
     color: #000000;
   }
   .page {
-    width: 35vw;
+    width: 33vw;
     aspect-ratio: 7 / 6;
     background-color: #111111;
     float: left;
@@ -209,7 +209,7 @@
     perspective: 250vw;
   }
   .book .pages {
-    width: 70vw;
+    width: 66vw;
     aspect-ratio: 7 / 3;
     position: relative;
     transform-style: preserve-3d;
@@ -223,7 +223,7 @@
     margin: 0;
     position: absolute;
     top: 0;
-    width: 35vw;
+    width: 33vw;
     aspect-ratio: 7 / 6;
     transform-origin: 0 0;
     transition: transform 1.4s;
