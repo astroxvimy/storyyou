@@ -5,7 +5,7 @@ import { HiUserGroup } from 'react-icons/hi2';
 
 // import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { getCustomerBalance } from '@/features/account/controllers/get-balance';
+import { getCustomerBasicBalance, getCustomerHobbyBalance, getCustomerProBalance } from '@/features/account/controllers/get-balance';
 // import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { getSession } from '@/features/account/controllers/get-session';
 
@@ -13,7 +13,9 @@ import { signOut } from './(auth)/auth-actions';
 
 export async function Navigation() {
   const session = await getSession();
-  const totalBalnce = await getCustomerBalance({userId: session?.user.id ?? ''});
+  const basic = await getCustomerBasicBalance({userId: session?.user.id ?? ''});
+  const pro = await getCustomerProBalance({userId: session?.user.id ?? ''});
+  const hobby = await getCustomerHobbyBalance({userId: session?.user.id ?? ''});
 
   return (
     <div className='relative flex items-center gap-6'>
@@ -24,7 +26,7 @@ export async function Navigation() {
               <HiUserGroup />
             </Link>
           </Button>
-          <BookWithBadge balance={totalBalnce ?? 0}></BookWithBadge>
+          <BookWithBadge balance={(basic + pro + hobby) ?? 0}></BookWithBadge>
           <Button className='text-xl hover:scale-[1.05]' onClick={signOut}><GrLogout /></Button>
         </>
       ) : (
