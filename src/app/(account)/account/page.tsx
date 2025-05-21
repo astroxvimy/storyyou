@@ -13,11 +13,20 @@ import { cn } from '@/utils/cn';
 
 export default async function AccountPage() {
   const session = await getSession();
-  const [basic, hobby, pro] = await Promise.all([
-    getCustomerBasicBalance({ userId: session?.user.id ?? '' }),
-    getCustomerHobbyBalance({ userId: session?.user.id ?? '' }),
-    getCustomerProBalance({ userId: session?.user.id ?? '' }),
-  ]);
+
+  let [basic, hobby, pro]: [number, number, number] = [0, 0, 0];
+
+  const userId = session?.user?.id;
+
+  if (userId && userId.trim() !== '') {
+    [basic, hobby, pro] = await Promise.all([
+      getCustomerBasicBalance({ userId }),
+      getCustomerHobbyBalance({ userId }),
+      getCustomerProBalance({ userId }),
+    ]);
+  } else {
+    throw new Error('Invalid or missing userId in session');
+  }
 
   return (
     <section className='relative rounded-lg bg-black px-4 py-16'>
