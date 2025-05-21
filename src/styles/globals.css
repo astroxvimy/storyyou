@@ -188,7 +188,7 @@
   .book {
     transition: opacity 0.4s 0.2s;
   }
-  p {
+  .book > p {
     margin-top: 8vw;
     text-align: center;
     color: #000000;
