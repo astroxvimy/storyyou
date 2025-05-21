@@ -1,6 +1,7 @@
-import { getStories } from '@/features/story/controllers/get-stories';
-import Link from 'next/link';
 import { ReactNode } from 'react';
+import Link from 'next/link';
+
+import { getStories } from '@/features/story/controllers/get-stories';
 
 export default async function StoriesLayout({ children }: { children: ReactNode }) {
   const stories = await getStories();
