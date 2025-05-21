@@ -8,8 +8,8 @@ import {
   getCustomerHobbyBalance,
   getCustomerProBalance,
 } from '@/features/account/controllers/get-balance';
-import { cn } from '@/utils/cn';
 import { getSessionUser } from '@/features/account/controllers/get-session';
+import { cn } from '@/utils/cn';
 
 export default async function AccountPage() {
   const user = await getSessionUser();
