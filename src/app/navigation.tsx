@@ -39,7 +39,7 @@ export async function Navigation() {
               <HiUserGroup />
             </Link>
           </Button>
-          <BookWithBadge balance={basic + pro + hobby}></BookWithBadge>
+          <Link href='/story'><BookWithBadge balance={basic + pro + hobby} /></Link>
           <Button className='text-xl hover:scale-[1.05]' onClick={signOut}>
             <GrLogout />
           </Button>

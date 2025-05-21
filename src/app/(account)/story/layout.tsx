@@ -7,7 +7,7 @@ export default async function StoriesLayout({ children }: { children: ReactNode 
   const stories = await getStories();
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[50vh]">
       {/* Left Sidebar */}
       <aside className="w-1/5 max-w-sm p-4">
         <h2 className="text-xl font-bold mt-8 mb-6">Your Stories</h2>
