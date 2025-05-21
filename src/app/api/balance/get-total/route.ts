@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getCustomerBalance } from '@/features/account/controllers/get-balance';
 
-export const runtime = 'nodejs';
+
 
 export async function POST(req: NextRequest) {
   const { userId } = await req.json();
