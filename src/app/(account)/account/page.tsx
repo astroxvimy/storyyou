@@ -8,15 +8,15 @@ import {
   getCustomerHobbyBalance,
   getCustomerProBalance,
 } from '@/features/account/controllers/get-balance';
-import { getSession } from '@/features/account/controllers/get-session';
 import { cn } from '@/utils/cn';
+import { getSessionUser } from '@/features/account/controllers/get-session';
 
 export default async function AccountPage() {
-  const session = await getSession();
+  const user = await getSessionUser();
 
   let [basic, hobby, pro]: [number, number, number] = [0, 0, 0];
 
-  const userId = session?.user?.id;
+  const userId = user?.id;
 
   if (userId && userId.trim() !== '') {
     [basic, hobby, pro] = await Promise.all([
@@ -36,7 +36,7 @@ export default async function AccountPage() {
           <section className='flex w-full flex-col items-center gap-8 rounded-lg p-10 px-4 text-center'>
             <p className='text-medium items center flex gap-3 font-bold text-neutral-300'>
               <FaUser className='text-xl' />
-              Email: {session?.user?.email}
+              Email: {user?.email}
             </p>
           </section>
           <section className='flex w-[50%] flex-col items-center gap-2 rounded-lg bg-zinc-900 p-6'>

@@ -20,7 +20,7 @@ export async function getCustomerBasicBalance({ userId }: { userId: string }) {
     .from('customers')
     .select('basic_balance')
     .eq('id', userId)
-    .maybeSingle();
+    .single();
 
     if (error) {
       throw new Error(error.message);
@@ -34,7 +34,7 @@ export async function getCustomerProBalance({ userId }: { userId: string }) {
     .from('customers')
     .select('pro_balance')
     .eq('id', userId)
-    .maybeSingle();
+    .single();
 
   if (error) {
     throw new Error(error.message);
@@ -48,7 +48,7 @@ export async function getCustomerHobbyBalance({ userId }: { userId: string }) {
     .from('customers')
     .select('hobby_balance')
     .eq('id', userId)
-    .maybeSingle();
+    .single();
 
   if (error) {
     throw new Error(error.message);

@@ -15,7 +15,7 @@ export async function getPublicStory(storyId: string): Promise<StoryWithPages | 
     .select('*, story_pages(*)')
     .eq('id', storyId)
     .order('page_number', { ascending: true, foreignTable: 'story_pages' })
-    .maybeSingle(); // Returns a single object instead of an array
+    .single(); // Returns a single object instead of an array
 
     if (error) {
       if (error.code === 'PGRST116') return null; // Not found
