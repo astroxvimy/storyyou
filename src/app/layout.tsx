@@ -2,8 +2,10 @@ import { PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import { Montserrat, Montserrat_Alternates } from 'next/font/google';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { IoLogoFacebook, IoLogoInstagram, IoLogoTwitter } from 'react-icons/io5';
 
+import { HeaderMenu } from '@/components/header-menu';
 import { Logo } from '@/components/logo';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/utils/cn';
@@ -65,16 +67,6 @@ async function AppBar() {
       <HeaderMenu />
       <Navigation />
     </header>
-  );
-}
-
-function HeaderMenu() {
-  return (
-    <div className='flex gap-4'>
-      <Link href='/create' className='hover:text-green-400 font-bold'>Create</Link>
-      <Link href='/gallery' className='hover:text-green-400 font-bold'>Gallery</Link>
-      <Link href='/pricing' className='hover:text-green-400 font-bold'>Pricing</Link>
-    </div>
   );
 }
 
