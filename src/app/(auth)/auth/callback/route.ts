@@ -23,9 +23,9 @@ export async function GET(request: NextRequest) {
     if (!user?.id) {
       return NextResponse.redirect(`${siteUrl}/login`);
     }
-    return NextResponse.redirect(`${siteUrl}`);
+    return NextResponse.redirect(`${siteUrl}/login`);
     
   }
 
-  return NextResponse.redirect(siteUrl);
+  return NextResponse.redirect(`${siteUrl}/login`);
 }
