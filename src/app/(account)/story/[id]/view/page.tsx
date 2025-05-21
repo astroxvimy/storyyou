@@ -211,6 +211,7 @@ export default function StoryViewPage() {
             console.log('🚗 Image generation complete. Generating book...');
             // storyService.generateBook(currentStoryId);
             setStatus('idle');
+            setMode("view");
           } else if (data.status === 'image_incomplete') {
             console.log('🚗 Image generation failed. Retrying...');
             await storyService.generateImages(currentStoryId); // Retry image generation
