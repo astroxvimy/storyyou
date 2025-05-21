@@ -62,7 +62,13 @@ export const signUpWithEmail = async (email: string, password: string): Promise<
   });
 
   if (error) {
-    return {data: null, error: error};
+    if (error.message.includes('User already registered')) {
+      // Handle user exists gracefully
+      return { data: null, error: 'Email is already registered.' };
+    } else {
+      // Other signup error
+      return { data: null, error: error.message };
+    }
   }
 
   if (!data?.user) return { data: null, error: "User was not created" };
