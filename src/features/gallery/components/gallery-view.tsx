@@ -29,7 +29,7 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
         }
       };
     });
-  }, []);
+  }, [storyWithPage]);
 
   return (
     <div>
@@ -42,13 +42,15 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
             {storyWithPage?.story_pages.map((page, index) => {
               if (index === 0)
                 return (
-                  <div key={page.id + storyWithPage.id + index} className='page overflow-hidden text-black'>
-                    <img
-                      src={page.page_image ?? ''}
-                      alt={`${storyWithPage.story_name}-image-${index}`}
-                      className='h-full w-full object-cover'
-                    />
-                  </div>
+                  <React.Fragment key={page.id + storyWithPage.id + index}>
+                    <div className='page overflow-hidden text-black'>
+                      <img
+                        src={page.page_image ?? ''}
+                        alt={`${storyWithPage.story_name}-image-${index}`}
+                        className='h-full w-full object-cover'
+                      />
+                    </div>
+                  </React.Fragment>
                 );
               else
                 return (
@@ -63,7 +65,7 @@ export const FlipBookView = ({ storyWithPage }: { storyWithPage: StoryWithPages 
                     <div className='page overflow-hidden text-black flex justify-center items-center'>
                       <p className='text-[6px] sm:text-sm md:text-md lg:text-lg px-8'>{page.page_text}</p>
                     </div>
-                  </React.Fragment>
+                    </React.Fragment>
                 );
             })}
           </div>
