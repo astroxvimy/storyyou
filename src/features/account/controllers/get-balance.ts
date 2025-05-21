@@ -3,14 +3,13 @@ import { getEnvVar } from '@/utils/get-env-var';
 
 export async function getCustomerBalance({ userId }: { userId: string }) {
   try {
-    // const basicBalance = getCustomerBasicBalance({userId});
-    // const proBalance = getCustomerProBalance({userId});
-    // const hobbyBalance = getCustomerHobbyBalance({userId});
-    // const balances = await  Promise.all([basicBalance, proBalance, hobbyBalance]);
+    const basicBalance = getCustomerBasicBalance({userId});
+    const proBalance = getCustomerProBalance({userId});
+    const hobbyBalance = getCustomerHobbyBalance({userId});
+    const [basic, pro, hobby] = await  Promise.all([basicBalance, proBalance, hobbyBalance]);
 
-    // const totalBalnce = balances.filter(b => b != null).reduce((s, v) => (s ?? 0) + (v ?? 0), 0);
-    // return totalBalnce  ?? 0;
-    return 0;
+    const total = basic + pro + hobby;
+    return total;
 
   } catch (error) {
     throw new Error('Error getting total balance');
