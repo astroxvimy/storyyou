@@ -13,7 +13,7 @@ import { signOut } from './(auth)/auth-actions';
 
 export async function Navigation() {
   const session = await getSession();
-  const user = await getSessionUser();
+  const user = session && await getSessionUser();
   let [basic, hobby, pro]: [number, number, number] = [0, 0, 0];
 
   const userId = user?.id;
