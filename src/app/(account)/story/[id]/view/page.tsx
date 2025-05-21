@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import { FlipBookView } from '@/features/gallery/components/gallery-view';
 import { StoryWithPages } from '@/features/story/controllers/get-story';
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
 import { Document, Image, Page, PDFDownloadLink, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { Font } from '@react-pdf/renderer';
-import { FlipBookView } from '@/features/gallery/components/gallery-view';
 
 export interface StoryPage {
   id: string;
