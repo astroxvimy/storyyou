@@ -265,11 +265,19 @@ export default function StoryViewPage() {
           <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
           <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
           {/* PDF Preview */}
-          <div className='mb-6'>
+          {/* <div className='mb-6'>
             <PDFViewer width='100%' height='1200'>
               <StoryPDF story={currentStory} />
             </PDFViewer>
-          </div>
+          </div> */}
+          <PDFDownloadLink
+            document={<StoryPDF story={currentStory} />}
+            fileName={`${currentStory.story_name || 'story'}.pdf`}
+            className='rounded rounded-full bg-purple-500 px-4 py-2 text-white hover:bg-purple-600'
+          >
+            Donwload PDF
+            <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' />
+          </PDFDownloadLink>
           {/* {currentStory.story_pages.map((page) => (
             <div key={page.id} className='mb-6'>
               <h3 className='font-semibold'>Page {page.page_number}</h3>
