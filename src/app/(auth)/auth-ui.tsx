@@ -125,7 +125,7 @@ export function AuthUI({
           variant="sexy"
           className='w-full flex items-center gap-4 text-bg-neutral-500 justify-center rounded-mdfont-medium'
           onClick={() => handleOAuthClick('google')}
-          disabled={pending}
+          disabled={true}
         >
           <IoLogoGoogle size={20} />
           Continue with Google
