@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCustomerBasicBalance, getCustomerProBalance, getCustomerHobbyBalance } from '@/features/account/controllers/get-balance';
+import { getCustomerBasicBalance, getCustomerHobbyBalance,getCustomerProBalance } from '@/features/account/controllers/get-balance';
 
 export async function POST(req: NextRequest) {
   const { userId } = await req.json();
