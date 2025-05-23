@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import { Button } from '@/components/ui/button';
 import { FlipBookView } from '@/features/gallery/components/gallery-view';
+import CopyLinkButton from '@/features/story/components/copy-link-buttion';
 import { StoryWithPages } from '@/features/story/controllers/get-story';
 import { storyService } from '@/libs/api_service';
 import type { Database } from '@/libs/supabase/types';
@@ -157,7 +159,7 @@ export default function StoryViewPage() {
   const [statusText, setStatusText] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"generation" | "view">("view");
+  const [mode, setMode] = useState<'generation' | 'view'>('view');
 
   // Load stories on mount
   useEffect(() => {
@@ -166,13 +168,12 @@ export default function StoryViewPage() {
     const getStoryStatus = async () => {
       const res = await storyService.getStoryStatus(currentStoryId);
       setLoading(false);
-      if (res.data.status !== 'image_complete') setMode("generation");
+      if (res.data.status !== 'image_complete') setMode('generation');
       const storyData = await storyService.getStory(currentStoryId);
       console.log('❤️❤️❤️', storyData.data.story);
       setCurrentStory(storyData.data.story);
     };
     getStoryStatus();
-    
   }, [currentStoryId]);
 
   // poll for text status
@@ -211,7 +212,7 @@ export default function StoryViewPage() {
             console.log('🚗 Image generation complete. Generating book...');
             // storyService.generateBook(currentStoryId);
             setStatus('idle');
-            setMode("view");
+            setMode('view');
           } else if (data.status === 'image_incomplete') {
             console.log('🚗 Image generation failed. Retrying...');
             await storyService.generateImages(currentStoryId); // Retry image generation
@@ -234,6 +235,19 @@ export default function StoryViewPage() {
     };
   }, [currentStoryId, status, mode]);
 
+  const setVisible = async () => {
+    setLoading(true);
+    if (currentStory) {
+      const newStoryResult = await storyService.setVisible({
+        storyId: currentStory.id,
+        visible: currentStory.is_public ? false : true,
+      });
+      const newStoryWithPageResult = await storyService.getStory(newStoryResult.data.story.id);
+      setCurrentStory(newStoryWithPageResult.data.story);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (currentStoryId) {
       setStatus('text_polling');
@@ -241,41 +255,46 @@ export default function StoryViewPage() {
     }
   }, [currentStoryId]);
 
-  if (loading) return (
-    <div>Loading your story...</div>
-  );
+  if (loading) return <div>Loading your story...</div>;
+  else if (mode === 'generation')
+    return (
+      <div className='mx-auto max-w-4xl p-4'>
+        {status !== 'idle' && <div>Your story is on generation, please wait for a while</div>}
+        <div>{statusText}</div>
 
-  else if (mode === "generation") return (
-    <div className='mx-auto max-w-4xl p-4'>
-      {status !== 'idle' && <div>Your story is on generation, please wait for a while</div>}
-      <div>{statusText}</div>
-
-      {currentStory && (
-        <div>
-          <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
-          <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
-        </div>)}
-    </div>
-  );
-  else if(currentStory) return (
-    <div>
-      <div className='flex justify-end'>
-        <PDFDownloadLink
-          document={<StoryPDF story={currentStory} />}
-          fileName={`${currentStory.story_name || 'story'}.pdf`}
-          className='rounded-lg bg-blue-400 px-4 py-2 text-white hover:bg-blue-600'
-        >
-          Print
-          {/* <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' /> */}
-        </PDFDownloadLink>
+        {currentStory && (
+          <div>
+            <h2 className='mb-2 text-xl font-semibold'>{currentStory.story_name}</h2>
+            <p className='mb-4 text-sm italic text-gray-600'>Status: {currentStory.story_status}</p>
+          </div>
+        )}
       </div>
-      <FlipBookView storyWithPage={currentStory} />
-    </div>
-  );
-
-  else return (
-    <div>Can not find the story</div>
-  )
+    );
+  else if (currentStory)
+    return (
+      <div>
+        <div className='flex justify-end'>
+          <Button
+            disabled={loading}
+            onClick={setVisible}
+            className='mr-4 rounded-lg bg-blue-400 px-4 py-2 text-white hover:bg-blue-600'
+          >
+            {currentStory.is_public ? 'Set Private' : 'Set Public'}
+          </Button>
+          {currentStory.is_public && <CopyLinkButton id={currentStory.id} />}
+          <PDFDownloadLink
+            document={<StoryPDF story={currentStory} />}
+            fileName={`${currentStory.story_name || 'story'}.pdf`}
+            className='rounded-lg bg-blue-400 px-4 py-2 text-white hover:bg-blue-600'
+          >
+            Print
+            {/* <img src='/download.png' alt='download' className='ml-2 inline-block h-6 w-6' /> */}
+          </PDFDownloadLink>
+        </div>
+        <FlipBookView storyWithPage={currentStory} />
+      </div>
+    );
+  else return <div>Can not find the story</div>;
 
   // return (
   //   <div className='mx-auto max-w-4xl p-4'>
